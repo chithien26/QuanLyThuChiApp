@@ -54,14 +54,14 @@ class BaseModelFinancials(BaseModel):
 
 
 class Income(BaseModelFinancials):
-    incomeCategory = models.ForeignKey('IncomeCategory', on_delete=models.SET('Không có'))
+    incomeCategory = models.ForeignKey('IncomeCategory', related_name='income', on_delete=models.SET('Không có'))
 
     def __str__(self):
         return self.description
 
 
 class Expense(BaseModelFinancials):
-    expenseCategory = models.ForeignKey('ExpenseCategory', on_delete=models.SET('Không có'))
+    expenseCategory = models.ForeignKey('ExpenseCategory', related_name='expense', on_delete=models.SET('Không có'))
 
     def __str__(self):
         return self.description

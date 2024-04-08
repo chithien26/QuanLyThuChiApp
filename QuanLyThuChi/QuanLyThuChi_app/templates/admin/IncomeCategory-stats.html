@@ -1,0 +1,10 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<h1>THỐNG KÊ THÔNG TIN CÁC DANH MỤC</h1>
+<h2>Số lượng danh mục: {{ incomeCategory_count }}</h2>
+<ul>
+{% for c in incomeCategory_stats %}
+<li><strong>{{ c.name }}</strong> có {{ c.income_count }} thu nhập </li>
+{% endfor %}
+</ul>
+{% endblock %}

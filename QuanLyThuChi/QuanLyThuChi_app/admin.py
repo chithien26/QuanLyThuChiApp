@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import IncomeCategory, ExpenseCategory, Income, Expense
+from .models import *
+from django.template.response import TemplateResponse
+from django.db.models import Count
+from django.urls import path
 # Register your models here.
 
 
@@ -22,8 +25,26 @@ class ExpenseAdmin(admin.ModelAdmin):
 class MyAdminSite(admin.AdminSite):
     site_header = 'Hệ thống quản lý thu chi'
 
-admin_site = MyAdminSite('my')
+    def get_urls(self):
+        return [
+            path('stats/', self.thuchi_stats)
+        ] + super().get_urls()
 
+    def thuchi_stats(self, request):
+        count = IncomeCategory.objects.filter(active=True).count()
+        stats = IncomeCategory.objects.annotate(income_count = Count('income')).values('id', 'name', 'income_count')
+
+        return TemplateResponse(request,'admin/IncomeCategory-stats.html',
+                        {
+                                'incomeCategory_count' : count,
+                                'incomeCategory_stats': stats,
+                                })
+
+
+
+
+admin_site = MyAdminSite('my')
+admin_site.register(User)
 admin_site.register(IncomeCategory, IncomeCategoryAdmin)
 admin_site.register(ExpenseCategory, ExpenseCategoryAdmin)
 admin_site.register(Income, IncomeAdmin)
