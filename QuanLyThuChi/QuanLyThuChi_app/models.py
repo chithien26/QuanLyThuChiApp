@@ -28,13 +28,33 @@ class UserCategory(BaseModel):
         else:
             return "UNKNOW"
 
+
 class User(AbstractUser):
     avatar = models.ImageField(upload_to='user/%Y/%m/%d/', null=True)
     userCategory = models.ForeignKey(UserCategory, on_delete=models.CASCADE, default=UserCategory.PERSONAL)
-    groups = models.ManyToManyField(Group, related_name='users')
+    groups = models.ManyToManyField(Group, related_name='users', through='Membership')
 
     def __str__(self):
         return self.username
+
+
+class Role(BaseModel):
+    LEADER = 1
+    MEMBER = 2
+
+    def __str__(self):
+        if self == Role.LEADER:
+            return self.LEADER
+        elif self == Role.MEMBER:
+            return self.MEMBER
+        else:
+            return "UNKNOW"
+
+
+class Membership(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    role = models.ForeignKey(Role, on_delete=models.SET("UNKNOW"), default=Role.MEMBER)
 
 
 class BaseModel_transaction_category(BaseModel):
@@ -42,6 +62,7 @@ class BaseModel_transaction_category(BaseModel):
         abstract = True
 
     name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
     icon = models.ImageField(upload_to='icon/', null=True)
     color = models.CharField(max_length=30, default='black')
 
