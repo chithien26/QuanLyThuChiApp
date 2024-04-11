@@ -16,9 +16,22 @@ class Group(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
 
+class UserCategory(BaseModel):
+    ADMIN = 1
+    PERSONAL = 2
+
+    def __str__(self):
+        if self == UserCategory.PERSONAL:
+            return self.PERSONAL
+        elif self == UserCategory.ADMIN:
+            return self.ADMIN
+        else:
+            return "UNKNOW"
+
 class User(AbstractUser):
     avatar = models.ImageField(upload_to='user/%Y/%m/%d/', null=True)
-    groups = models.ManyToManyField(Group, related_name='user')
+    userCategory = models.ForeignKey(UserCategory, on_delete=models.CASCADE, default=UserCategory.PERSONAL)
+    groups = models.ManyToManyField(Group, related_name='users')
 
     def __str__(self):
         return self.username
