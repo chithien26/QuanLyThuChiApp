@@ -6,20 +6,20 @@ from django.urls import path
 # Register your models here.
 
 
-class IncomeInlineAdmin(admin.StackedInline):
-    model = Income
-    fk_name = 'incomeCategory'
-class IncomeCategoryAdmin(admin.ModelAdmin):
-    inlines = [IncomeInlineAdmin]
-
-class ExpenseCategoryAdmin(admin.ModelAdmin):
-    pass
-
-class IncomeAdmin(admin.ModelAdmin):
-    pass
-
-class ExpenseAdmin(admin.ModelAdmin):
-    pass
+# class IncomeInlineAdmin(admin.StackedInline):
+#     model = Income
+#     fk_name = 'incomeCategory'
+# class IncomeCategoryAdmin(admin.ModelAdmin):
+#     inlines = [IncomeInlineAdmin]
+#
+# class ExpenseCategoryAdmin(admin.ModelAdmin):
+#     pass
+#
+# class IncomeAdmin(admin.ModelAdmin):
+#     pass
+#
+# class ExpenseAdmin(admin.ModelAdmin):
+#     pass
 
 
 class MyAdminSite(admin.AdminSite):
