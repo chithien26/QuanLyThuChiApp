@@ -58,6 +58,8 @@ admin_site = MyAdminSite('my')
 
 admin_site.register(User)
 admin_site.register(Group)
+admin_site.register(Membership)
+admin_site.register(Role)
 admin_site.register(TransactionCategory_group)
 admin_site.register(TransactionCategory_self)
 admin_site.register(Transaction_self)
