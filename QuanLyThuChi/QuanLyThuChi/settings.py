@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'QuanLyThuChi_app',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
