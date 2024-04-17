@@ -6,10 +6,9 @@ from . import views
 
 
 router = DefaultRouter()
-# router.register('user', views.UserViewSet)
+router.register('users', views.UserViewSet, basename='users')
 
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('admin/', admin_site.urls)
 ]

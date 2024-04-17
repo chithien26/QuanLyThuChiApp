@@ -41,7 +41,7 @@ class Membership(models.Model):
     role_name = models.CharField(max_length=20, choices=ROLE, default='Member')
 
 
-class BaseModel_transaction_category(BaseModel):
+class BaseModelTransactionCategory(BaseModel):
     class Meta:
         abstract = True
 
@@ -56,21 +56,21 @@ class BaseModel_transaction_category(BaseModel):
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Income')
 
 
-class TransactionCategory_self(BaseModel_transaction_category):
+class TransactionCategorySelf(BaseModelTransactionCategory):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
 
-class TransactionCategory_group(BaseModel_transaction_category):
+class TransactionCategoryGroup(BaseModelTransactionCategory):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
 
-class BaseModel_transaction(BaseModel):
+class BaseModelTransaction(BaseModel):
     class Meta:
         abstract = True
         ordering = ["amount"]
@@ -79,16 +79,16 @@ class BaseModel_transaction(BaseModel):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
 
 
-class Transaction_self(BaseModel_transaction):
-    transaction_Category_self = models.ForeignKey(TransactionCategory_self, related_name='transaction_self',
+class TransactionSelf(BaseModelTransaction):
+    transaction_Category_self = models.ForeignKey(TransactionCategorySelf, related_name='transaction_self',
                                                  on_delete=models.SET("Không có"))
 
     def __str__(self):
         return self.name
 
 
-class Transaction_group(BaseModel_transaction):
-    transactionCategory_group = models.ForeignKey(TransactionCategory_group, related_name='transaction_group',
+class TransactionGroup(BaseModelTransaction):
+    transactionCategory_group = models.ForeignKey(TransactionCategoryGroup, related_name='transaction_group',
                                                   on_delete=models.SET("Không có"))
 
     def __str__(self):
