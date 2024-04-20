@@ -49,5 +49,5 @@ class TransactionGroup(ModelSerializer):
     category = TransactionCategoryGroupSerializer()
 
     class Meta:
-        model = TransactionSelf
-        fields = ['id', 'name', 'amount', 'created_date', 'transaction_Category_group_id', 'group']
+        model = TransactionGroup
+        fields = ['id', 'name', 'amount', 'created_date', 'transaction_category', 'group']

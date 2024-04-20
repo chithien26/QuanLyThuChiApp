@@ -16,11 +16,11 @@ class BaseModel(models.Model):
 class User(AbstractUser):
     ACCOUNT_TYPES = (
         ('personal', 'Personal'),
-        ('group', 'Group'),
+        ('admin', 'Admin'),
     )
 
     avatar = models.ImageField(upload_to='images/user/%Y/%m/%d/', null=True)
-    # account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default='Personal')
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
 
     def __str__(self):
         return self.username
@@ -30,6 +30,8 @@ class Group(BaseModel):
     name = models.CharField(max_length=50, unique=True)
     users = models.ManyToManyField(User, related_name='group', through='Membership')
 
+    def __str__(self):
+        return self.name
 
 class Membership(models.Model):
     ROLE = (
@@ -80,7 +82,7 @@ class BaseModelTransaction(BaseModel):
 
 
 class TransactionSelf(BaseModelTransaction):
-    transaction_Category_self = models.ForeignKey(TransactionCategorySelf, related_name='transaction_self',
+    transaction_category = models.ForeignKey(TransactionCategorySelf, related_name='transaction_self',
                                                  on_delete=models.SET("Không có"))
 
     def __str__(self):
@@ -88,7 +90,7 @@ class TransactionSelf(BaseModelTransaction):
 
 
 class TransactionGroup(BaseModelTransaction):
-    transactionCategory_group = models.ForeignKey(TransactionCategoryGroup, related_name='transaction_group',
+    transaction_category = models.ForeignKey(TransactionCategoryGroup, related_name='transaction_group',
                                                   on_delete=models.SET("Không có"))
 
     def __str__(self):
