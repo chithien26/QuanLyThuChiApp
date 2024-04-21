@@ -1,0 +1,10 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<h1>THỐNG KÊ THÔNG TIN CÁC GROUP</h1>
+<h2>Số lượng nhóm: {{ group_count }}</h2>
+<ul>
+{% for g in group_stats %}
+<li><strong>Nhóm {{ g.name }}</strong> có {{ g.user_count }} thành viên </li>
+{% endfor %}
+</ul>
+{% endblock %}
