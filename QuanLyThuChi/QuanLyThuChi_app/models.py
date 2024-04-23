@@ -44,16 +44,18 @@ class Membership(models.Model):
 
 
 class BaseModelTransactionCategory(BaseModel):
+    class Meta:
+        abstract = True
+
     TRANSACTION_TYPES = (
         ('income', 'Income'),
         ('expense', 'Expense'),
     )
     name = models.CharField(max_length=50, unique=True)
-    description = models.TextField(blank=True, null=True)
     icon = models.ImageField(upload_to='images/icon/', null=True)
     color = models.CharField(max_length=30, default='black')
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Income')
-    users = models.ManyToManyField(User, related_name='user', through='TransactionSelf')
+
 
 
 class TransactionCategorySelf(BaseModelTransactionCategory):
@@ -77,7 +79,7 @@ class BaseModelTransaction(BaseModel):
 
     name = models.CharField(max_length=50, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-
+    description = models.TextField(blank=True, null=True)
 
 class TransactionSelf(BaseModelTransaction):
     transaction_category = models.ForeignKey(TransactionCategorySelf, related_name='transaction_self',
@@ -93,5 +95,7 @@ class TransactionGroup(BaseModelTransaction):
 
     def __str__(self):
         return self.name
+
+
 
 

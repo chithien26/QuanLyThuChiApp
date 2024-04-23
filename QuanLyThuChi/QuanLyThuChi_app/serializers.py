@@ -1,5 +1,4 @@
 from rest_framework.serializers import ModelSerializer
-
 from .models import *
 
 
@@ -51,3 +50,5 @@ class TransactionGroup(ModelSerializer):
     class Meta:
         model = TransactionGroup
         fields = ['id', 'name', 'amount', 'created_date', 'transaction_category', 'group']
+
+
