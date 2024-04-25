@@ -7,6 +7,9 @@ from . import views
 
 router = DefaultRouter()
 router.register('users', views.UserViewSet, basename='users')
+router.register('groups', views.GroupViewSet, basename='groups')
+router.register('category_self', views.TransactionCategorySelfViewSet, basename='category_self')
+router.register('category_group', views.TransactionCategoryGroupViewSet, basename='category_group')
 
 
 urlpatterns = [

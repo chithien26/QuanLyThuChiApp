@@ -5,33 +5,45 @@ from .models import *
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email']
+        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'avatar']
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
 
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(validated_data["password"])
+        user.save()
 
+        return user
+
+# class UsernameSerializer(ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ['username']
 class GroupSerializer(ModelSerializer):
-    # leader = User.objects.filter(Membership__role_name='leader')
     users = UserSerializer(many=True)
-
     class Meta:
         model = Group
         fields = ['id', 'name', 'created_date', 'users']
-        # fields = ['id', 'name', 'created_date', 'leader', 'users']
 
 
 class TransactionCategorySelfSerializer(ModelSerializer):
     user = UserSerializer()
 
     class Meta:
-        model = TransactionSelf
-        fields = ['id', 'name', 'description', 'transaction_type', 'created_date', 'user']
+        model = TransactionCategorySelf
+        fields = ['id', 'name', 'transaction_type', 'created_date', 'user']
 
 
 class TransactionCategoryGroupSerializer(ModelSerializer):
-    Group = GroupSerializer()
+    group = GroupSerializer()
 
     class Meta:
-        model = TransactionGroup
-        fields = ['id', 'name', 'description', 'transaction_type', 'created_date', 'group']
+        model = TransactionCategoryGroup
+        fields = ['id', 'name', 'transaction_type', 'created_date', 'group']
 
 
 class TransactionSelf(ModelSerializer):
@@ -40,7 +52,7 @@ class TransactionSelf(ModelSerializer):
 
     class Meta:
         model = TransactionSelf
-        fields = ['id', 'name', 'amount', 'created_date', 'category', 'user']
+        fields = ['id', 'name', 'amount', 'description', 'created_date', 'category', 'user']
 
 
 class TransactionGroup(ModelSerializer):
@@ -49,6 +61,6 @@ class TransactionGroup(ModelSerializer):
 
     class Meta:
         model = TransactionGroup
-        fields = ['id', 'name', 'amount', 'created_date', 'transaction_category', 'group']
+        fields = ['id', 'name', 'amount', 'description', 'created_date', 'category', 'group']
 
 

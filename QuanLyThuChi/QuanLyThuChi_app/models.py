@@ -19,7 +19,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
 
-    avatar = models.ImageField(upload_to='images/user/%Y/%m/%d/', null=True)
+    avatar = models.ImageField(upload_to='images/avatar/%Y/%m/%d/', null=True)
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
 
     def __str__(self):
