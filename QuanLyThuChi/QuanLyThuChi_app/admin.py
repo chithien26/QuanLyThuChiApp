@@ -18,7 +18,8 @@ class TransactionGroupInlineAdmin(admin.StackedInline):
 class MembershipInlineAdmin(admin.StackedInline):
     model = Membership
 
-
+# class FreetimeOptionInlineAdmin(admin.StackedInline):
+#     model = FreetimeOption
 # Model Admin
 class UserAdmin(admin.ModelAdmin):
     list_display = ['id', 'username', 'first_name', 'last_name', 'date_joined', 'email']
@@ -50,7 +51,13 @@ class TransactionGroupAdmin(admin.ModelAdmin):
 class MembershipAdmin(admin.ModelAdmin):
     pass
 
+class FreetimeOptionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'date', 'time_of_day', 'created_date', 'active']
+    ordering = ["date"]
 
+class SurveyAdmin(admin.ModelAdmin):
+    # inlines = [FreetimeOptionInlineAdmin,]
+    pass
 class MyAdminSite(admin.AdminSite):
     site_header = 'Hệ thống quản lý thu chi'
 
@@ -78,3 +85,5 @@ admin_site.register(TransactionCategoryGroup, TransactionCategoryGroupAdmin)
 admin_site.register(TransactionCategorySelf, TransactionCategorySelfAdmin)
 admin_site.register(TransactionSelf, TransactionSelfAdmin)
 admin_site.register(TransactionGroup, TransactionGroupAdmin)
+admin_site.register(FreetimeOption, FreetimeOptionAdmin)
+admin_site.register(Survey, SurveyAdmin)

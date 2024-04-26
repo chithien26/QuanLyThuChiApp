@@ -21,7 +21,7 @@ class User(AbstractUser):
 
     avatar = models.ImageField(upload_to='images/avatar/%Y/%m/%d/', null=True)
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
-
+    # admin = models.BooleanField(default=False)
     def __str__(self):
         return self.username
 
@@ -33,7 +33,7 @@ class Group(BaseModel):
     def __str__(self):
         return self.name
 
-class Membership(models.Model):
+class Membership(BaseModel):
     ROLE = (
         ('leader', 'Leader'),
         ('member', 'Member'),
@@ -98,4 +98,18 @@ class TransactionGroup(BaseModelTransaction):
 
 
 
+class FreetimeOption(BaseModel):
+    class Meta:
+        ordering = ["date"]
+    TIME_OF_DAY = (
+        ('morning', 'Morning'),
+        ('afternoon', 'Afternoon'),
+        ('all day', 'All day')
+    )
+    date = models.DateField()
+    time_of_day = models.CharField(max_length=20, choices=TIME_OF_DAY)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+class Survey(BaseModel):
+    options = models.ManyToManyField(FreetimeOption, related_name='option')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
