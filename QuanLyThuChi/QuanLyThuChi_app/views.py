@@ -1,13 +1,11 @@
 from django.http import HttpResponse
-from django.db.models import Count
-from requests import Response
-from . import serializers
-from .serializers import *
-from .models import *
-from .paginators import *
-from rest_framework import viewsets, generics, permissions, status
-from rest_framework.decorators import action, api_view
+from rest_framework import viewsets, generics, permissions
 from rest_framework.parsers import MultiPartParser
+
+from .models import *
+from .serializers import *
+
+
 # Create your views here.
 
 
@@ -43,9 +41,21 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
     serializer_class = TransactionCategoryGroupSerializer
 
 
+class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+    queryset = TransactionSelf.objects.filter(active=True)
+    serializer_class = TransactionSelfSerializer
 
 
+class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+    queryset = TransactionGroup.objects.filter(active=True)
+    serializer_class = TransactionSelfSerializer
 
 
+class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+    queryset = FreetimeOption.objects.filter(active=True)
+    serializer_class = FreetimeOptionSerializer
 
 
+class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+    queryset = Survey.objects.filter(active=True)
+    serializer_class = SurveySerializer

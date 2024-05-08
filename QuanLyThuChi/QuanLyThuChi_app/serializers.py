@@ -1,4 +1,5 @@
 from rest_framework.serializers import ModelSerializer
+
 from .models import *
 
 
@@ -19,12 +20,10 @@ class UserSerializer(ModelSerializer):
 
         return user
 
-# class UsernameSerializer(ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['username']
+
 class GroupSerializer(ModelSerializer):
     users = UserSerializer(many=True)
+
     class Meta:
         model = Group
         fields = ['id', 'name', 'created_date', 'users']
@@ -46,7 +45,7 @@ class TransactionCategoryGroupSerializer(ModelSerializer):
         fields = ['id', 'name', 'transaction_type', 'created_date', 'group']
 
 
-class TransactionSelf(ModelSerializer):
+class TransactionSelfSerializer(ModelSerializer):
     user = UserSerializer()
     category = TransactionCategorySelfSerializer()
 
@@ -55,7 +54,7 @@ class TransactionSelf(ModelSerializer):
         fields = ['id', 'name', 'amount', 'description', 'created_date', 'category', 'user']
 
 
-class TransactionGroup(ModelSerializer):
+class TransactionGroupSerializer(ModelSerializer):
     group = GroupSerializer()
     category = TransactionCategoryGroupSerializer()
 
@@ -64,3 +63,17 @@ class TransactionGroup(ModelSerializer):
         fields = ['id', 'name', 'amount', 'description', 'created_date', 'category', 'group']
 
 
+class FreetimeOptionSerializer(ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = FreetimeOption
+        fields = ['date', 'time_of_day', 'user']
+
+
+class SurveySerializer(ModelSerializer):
+    group = GroupSerializer()
+    options = FreetimeOptionSerializer(many=True)
+    class Meta:
+        model = Survey
+        fields = ['options', 'group']
