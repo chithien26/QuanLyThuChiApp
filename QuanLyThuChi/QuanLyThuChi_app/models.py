@@ -82,16 +82,14 @@ class BaseModelTransaction(BaseModel):
     description = models.TextField(blank=True, null=True)
 
 class TransactionSelf(BaseModelTransaction):
-    transaction_category = models.ForeignKey(TransactionCategorySelf, related_name='transaction_self',
-                                                 on_delete=models.SET("Không có"))
+    transaction_category = models.ForeignKey(TransactionCategorySelf, on_delete=models.SET("Không có"))
 
     def __str__(self):
         return self.name
 
 
 class TransactionGroup(BaseModelTransaction):
-    transaction_category = models.ForeignKey(TransactionCategoryGroup, related_name='transaction_group',
-                                                  on_delete=models.SET("Không có"))
+    transaction_category = models.ForeignKey(TransactionCategoryGroup, on_delete=models.SET("Không có"))
 
     def __str__(self):
         return self.name
