@@ -16,7 +16,7 @@ class TransactionGroupInlineAdmin(admin.StackedInline):
 
 
 class MembershipInlineAdmin(admin.StackedInline):
-    model = Membership
+    model = Member
 
 # class FreetimeOptionInlineAdmin(admin.StackedInline):
 #     model = FreetimeOption
@@ -41,11 +41,11 @@ class TransactionCategoryGroupAdmin(admin.ModelAdmin):
 
 
 class TransactionSelfAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'amount', 'created_date', 'transaction_category']
+    list_display = ['id', 'name', 'amount', 'created_date', 'transaction_category', 'user']
 
 
 class TransactionGroupAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'amount', 'created_date', 'transaction_category']
+    list_display = ['id', 'name', 'amount', 'created_date', 'transaction_category', 'group']
 
 
 class MembershipAdmin(admin.ModelAdmin):
@@ -80,7 +80,7 @@ admin_site = MyAdminSite('my')
 
 admin_site.register(User, UserAdmin)
 admin_site.register(Group, GroupAdmin)
-admin_site.register(Membership, MembershipAdmin)
+admin_site.register(Member, MembershipAdmin)
 admin_site.register(TransactionCategoryGroup, TransactionCategoryGroupAdmin)
 admin_site.register(TransactionCategorySelf, TransactionCategorySelfAdmin)
 admin_site.register(TransactionSelf, TransactionSelfAdmin)

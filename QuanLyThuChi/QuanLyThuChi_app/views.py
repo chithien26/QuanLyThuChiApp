@@ -34,14 +34,27 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
         return Response(serializers.TransactionCategorySelfSerializer(transaction_category, many=True).data,
                         status=status.HTTP_200_OK)
 
+    @action(methods=['get'], url_path='transaction', detail=True)
+    def get_transaction_self(self, request, pk):
+        transaction = self.get_object().transactionself_set.filter(active=True)
+
+        return Response(serializers.TransactionSelfSerializer(transaction, many=True).data,
+                        status=status.HTTP_200_OK)
+
     @action(methods=['post'], url_path='add_transaction_category', detail=True)
     def add_transaction(self, request, pk):
-        tc = self.get_object().transactionself_set.create(name=request.data.get('name'),
-                                                         icon=request.data.get('icon'),
-                                                         color=request.data.get('color'),
-                                                         transaction_type=request.data.get('transaction_type'),
-                                                         user=request.user)
+        tc = self.get_object().transactionself_set.create(name=request.data.get('namae'),
+                                                          icon=request.data.get('icon'),
+                                                          color=request.data.get('color'),
+                                                          transaction_type=request.data.get('transaction_type'),
+                                                          user=request.user)
         return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['get'], url_path='statistics', detail=True)
+    def statistics(self, request, pk):
+        t = self.get_object().transactionself_set.filter(created_date__month=5)
+
+        return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_200_OK)
 
 
 class GroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):

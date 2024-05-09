@@ -30,38 +30,51 @@ class GroupSerializer(ModelSerializer):
 
 
 class TransactionCategorySelfSerializer(ModelSerializer):
-    user = UserSerializer()
 
     class Meta:
         model = TransactionCategorySelf
         fields = ['id', 'name', 'transaction_type', 'created_date', 'user']
+        extra_kwargs = {
+            'user': {
+                'write_only': True
+            }
+        }
 
 
 class TransactionCategoryGroupSerializer(ModelSerializer):
-    group = GroupSerializer()
 
     class Meta:
         model = TransactionCategoryGroup
         fields = ['id', 'name', 'transaction_type', 'created_date', 'group']
 
+    extra_kwargs = {
+        'group': {
+            'write_only': True
+        }
+    }
 
 class TransactionSelfSerializer(ModelSerializer):
-    user = UserSerializer()
-    category = TransactionCategorySelfSerializer()
-
+    transaction_category = TransactionCategorySelfSerializer()
     class Meta:
         model = TransactionSelf
-        fields = ['id', 'name', 'amount', 'description', 'created_date', 'category', 'user']
-
+        fields = ['id', 'name', 'amount', 'description', 'created_date', 'transaction_category', 'user']
+        extra_kwargs = {
+            'user': {
+                'write_only': True
+            }
+        }
 
 class TransactionGroupSerializer(ModelSerializer):
-    group = GroupSerializer()
-    category = TransactionCategoryGroupSerializer()
+    transaction_category = TransactionCategoryGroupSerializer()
 
     class Meta:
         model = TransactionGroup
-        fields = ['id', 'name', 'amount', 'description', 'created_date', 'category', 'group']
-
+        fields = ['id', 'name', 'amount', 'description', 'created_date', 'transaction_category', 'group']
+        extra_kwargs = {
+            'group': {
+                'write_only': True
+            }
+        }
 
 class FreetimeOptionSerializer(ModelSerializer):
     user = UserSerializer()

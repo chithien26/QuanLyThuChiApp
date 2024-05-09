@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from rest_framework import request
 
 
 # Create your models here.
@@ -21,6 +20,7 @@ class User(AbstractUser):
 
     avatar = models.ImageField(upload_to='images/avatar/%Y/%m/%d/', null=True)
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
+
     # admin = models.BooleanField(default=False)
     def __str__(self):
         return self.username
@@ -28,19 +28,19 @@ class User(AbstractUser):
 
 class Group(BaseModel):
     name = models.CharField(max_length=50, unique=True)
-    users = models.ManyToManyField(User, related_name='group', through='Membership')
+    users = models.ManyToManyField(User, related_name='group', through='Member')
 
     def __str__(self):
         return self.name
 
-class Membership(BaseModel):
-    ROLE = (
-        ('leader', 'Leader'),
-        ('member', 'Member'),
-    )
+
+class Member(BaseModel):
+    class Meta:
+        unique_together = ('group', 'user')
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    role_name = models.CharField(max_length=20, choices=ROLE, default='Member')
+    is_leader = models.BooleanField(default=False)
 
 
 class BaseModelTransactionCategory(BaseModel):
@@ -54,8 +54,7 @@ class BaseModelTransactionCategory(BaseModel):
     name = models.CharField(max_length=50, unique=True)
     icon = models.ImageField(upload_to='images/icon/', null=True)
     color = models.CharField(max_length=30, default='black')
-    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Income')
-
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Expense')
 
 
 class TransactionCategorySelf(BaseModelTransactionCategory):
@@ -81,24 +80,27 @@ class BaseModelTransaction(BaseModel):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
 
+
 class TransactionSelf(BaseModelTransaction):
-    transaction_category = models.ForeignKey(TransactionCategorySelf, on_delete=models.SET("Không có"))
+    transaction_category = models.ForeignKey(TransactionCategorySelf, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
 
 class TransactionGroup(BaseModelTransaction):
-    transaction_category = models.ForeignKey(TransactionCategoryGroup, on_delete=models.SET("Không có"))
+    transaction_category = models.ForeignKey(TransactionCategoryGroup, on_delete=models.SET_NULL, null=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
 
-
 class FreetimeOption(BaseModel):
     class Meta:
         ordering = ["date"]
+
     TIME_OF_DAY = (
         ('morning', 'Morning'),
         ('afternoon', 'Afternoon'),
@@ -107,6 +109,7 @@ class FreetimeOption(BaseModel):
     date = models.DateField()
     time_of_day = models.CharField(max_length=20, choices=TIME_OF_DAY)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
 
 class Survey(BaseModel):
     options = models.ManyToManyField(FreetimeOption, related_name='option')
