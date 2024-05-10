@@ -52,7 +52,7 @@ class MembershipAdmin(admin.ModelAdmin):
     pass
 
 class FreetimeOptionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'date', 'time_of_day', 'created_date', 'active']
+    list_display = ['id', 'date', 'time_of_day', 'created_date', 'active']
     ordering = ["date"]
 
 class SurveyAdmin(admin.ModelAdmin):

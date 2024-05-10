@@ -97,6 +97,35 @@ class TransactionGroup(BaseModelTransaction):
         return self.name
 
 
+# class FreetimeOption(BaseModel):
+#     class Meta:
+#         ordering = ["date"]
+#
+#     TIME_OF_DAY = (
+#         ('morning', 'Morning'),
+#         ('afternoon', 'Afternoon'),
+#         ('all day', 'All day')
+#     )
+#     date = models.DateField()
+#     time_of_day = models.CharField(max_length=20, choices=TIME_OF_DAY)
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#
+#
+# class Survey(BaseModel):
+#     options = models.ManyToManyField(FreetimeOption, related_name='option')
+#     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+
+# Test freetime (member -- thuộc tính không được là member)
+
+
+class Survey(BaseModel):
+    name = models.CharField(max_length=20)
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
 class FreetimeOption(BaseModel):
     class Meta:
         ordering = ["date"]
@@ -108,9 +137,8 @@ class FreetimeOption(BaseModel):
     )
     date = models.DateField()
     time_of_day = models.CharField(max_length=20, choices=TIME_OF_DAY)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
 
-
-class Survey(BaseModel):
-    options = models.ManyToManyField(FreetimeOption, related_name='option')
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    def __str__(self):
+        return f'{self.date} - {self.time_of_day}'
