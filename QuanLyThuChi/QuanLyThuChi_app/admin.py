@@ -1,12 +1,13 @@
 from django.contrib import admin
-from django.urls import path
-from django.template.response import TemplateResponse
 from django.db.models import Count
+from django.template.response import TemplateResponse
+from django.urls import path
+
 from .models import *
 
 
+###Inline Admin###
 
-# Inline
 class TransactionSelfInlineAdmin(admin.StackedInline):
     model = TransactionSelf
 
@@ -15,49 +16,56 @@ class TransactionGroupInlineAdmin(admin.StackedInline):
     model = TransactionGroup
 
 
-class MembershipInlineAdmin(admin.StackedInline):
-    model = Member
+class GroupMemberInlineAdmin(admin.StackedInline):
+    model = GroupMember
 
-# class FreetimeOptionInlineAdmin(admin.StackedInline):
-#     model = FreetimeOption
-# Model Admin
+
+class FreetimeOptionInlineAdmin(admin.StackedInline):
+    model = FreetimeOption
+
+
+###Admin###
 class UserAdmin(admin.ModelAdmin):
     list_display = ['id', 'username', 'first_name', 'last_name', 'date_joined', 'email']
 
 
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'created_date', 'active']
-    inlines = [MembershipInlineAdmin]
+    list_display = ['id', 'name', 'create_by', 'created_date', 'active']
+    inlines = [GroupMemberInlineAdmin]
+
+
+class GroupMemberAdmin(admin.ModelAdmin):
+    list_display = ['user', 'group', 'is_leader']
 
 
 class TransactionCategorySelfAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'created_date', 'updated_date', 'transaction_type', 'user']
+    list_display = ['id', 'name', 'created_date', 'transaction_type', 'user']
     inlines = [TransactionSelfInlineAdmin]
 
 
 class TransactionCategoryGroupAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'created_date', 'updated_date', 'transaction_type', 'group']
+    list_display = ['id', 'name', 'created_date', 'transaction_type', 'group']
     inlines = [TransactionGroupInlineAdmin]
 
 
 class TransactionSelfAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'amount', 'created_date', 'transaction_category', 'user']
+    list_display = ['id', 'name', 'amount', 'timestamp', 'transaction_category', 'user']
 
 
 class TransactionGroupAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'amount', 'created_date', 'transaction_category', 'group']
+    list_display = ['id', 'name', 'amount', 'timestamp', 'transaction_category', 'group']
 
-
-class MembershipAdmin(admin.ModelAdmin):
-    pass
 
 class FreetimeOptionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'date', 'time_of_day', 'created_date', 'active']
+    list_display = ['id', 'date', 'time_of_day', 'created_date', 'survey', 'active']
     ordering = ["date"]
 
+
 class SurveyAdmin(admin.ModelAdmin):
-    # inlines = [FreetimeOptionInlineAdmin,]
-    pass
+    list_display = ['id', 'name', 'creator', 'group']
+    inlines = [FreetimeOptionInlineAdmin]
+
+
 class MyAdminSite(admin.AdminSite):
     site_header = 'Hệ thống quản lý thu chi'
 
@@ -70,17 +78,17 @@ class MyAdminSite(admin.AdminSite):
         group_count = Group.objects.filter(active=True).count()
 
         stats = Group.objects.annotate(user_count=Count('users__id')).values('id', 'name', 'user_count')
-        return TemplateResponse(request,'admin/group-stats.html', {
-                                'group_count': group_count,
-                                'group_stats': stats
-                                  })
+        return TemplateResponse(request, 'admin/group-stats.html', {
+            'group_count': group_count,
+            'group_stats': stats
+        })
 
 
 admin_site = MyAdminSite('my')
 
 admin_site.register(User, UserAdmin)
 admin_site.register(Group, GroupAdmin)
-admin_site.register(Member, MembershipAdmin)
+admin_site.register(GroupMember, GroupMemberAdmin)
 admin_site.register(TransactionCategoryGroup, TransactionCategoryGroupAdmin)
 admin_site.register(TransactionCategorySelf, TransactionCategorySelfAdmin)
 admin_site.register(TransactionSelf, TransactionSelfAdmin)

@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -14,27 +16,26 @@ class BaseModel(models.Model):
 
 class User(AbstractUser):
     ACCOUNT_TYPES = (
-        ('personal', 'Personal'),
+        ('user', 'User'),
         ('admin', 'Admin'),
     )
 
     avatar = models.ImageField(upload_to='images/avatar/%Y/%m/%d/', null=True)
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
 
-    # admin = models.BooleanField(default=False)
     def __str__(self):
         return self.username
 
 
 class Group(BaseModel):
     name = models.CharField(max_length=50, unique=True)
-    users = models.ManyToManyField(User, related_name='group', through='Member')
+    create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name
 
 
-class Member(BaseModel):
+class GroupMember(BaseModel):
     class Meta:
         unique_together = ('group', 'user')
 
@@ -53,7 +54,6 @@ class BaseModelTransactionCategory(BaseModel):
     )
     name = models.CharField(max_length=50, unique=True)
     icon = models.ImageField(upload_to='images/icon/', null=True)
-    color = models.CharField(max_length=30, default='black')
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Expense')
 
 
@@ -78,6 +78,7 @@ class BaseModelTransaction(BaseModel):
 
     name = models.CharField(max_length=50, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateField(default=date.today())
     description = models.TextField(blank=True, null=True)
 
 
@@ -92,30 +93,11 @@ class TransactionSelf(BaseModelTransaction):
 class TransactionGroup(BaseModelTransaction):
     transaction_category = models.ForeignKey(TransactionCategoryGroup, on_delete=models.SET_NULL, null=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    accept = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
-
-
-# class FreetimeOption(BaseModel):
-#     class Meta:
-#         ordering = ["date"]
-#
-#     TIME_OF_DAY = (
-#         ('morning', 'Morning'),
-#         ('afternoon', 'Afternoon'),
-#         ('all day', 'All day')
-#     )
-#     date = models.DateField()
-#     time_of_day = models.CharField(max_length=20, choices=TIME_OF_DAY)
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#
-#
-# class Survey(BaseModel):
-#     options = models.ManyToManyField(FreetimeOption, related_name='option')
-#     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-
-# Test freetime (member -- thuộc tính không được là member)
 
 
 class Survey(BaseModel):
@@ -125,6 +107,7 @@ class Survey(BaseModel):
 
     def __str__(self):
         return self.name
+
 
 class FreetimeOption(BaseModel):
     class Meta:
@@ -137,7 +120,7 @@ class FreetimeOption(BaseModel):
     )
     date = models.DateField()
     time_of_day = models.CharField(max_length=20, choices=TIME_OF_DAY)
-    users = models.ManyToManyField(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
 
     def __str__(self):
