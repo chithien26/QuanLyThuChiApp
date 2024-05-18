@@ -6,9 +6,12 @@ from .models import *
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'avatar']
+        fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'avatar', 'account_type']
         extra_kwargs = {
             'password': {
+                'write_only': True
+            },
+            'account_type': {
                 'write_only': True
             }
         }
@@ -22,17 +25,28 @@ class UserSerializer(ModelSerializer):
 
 
 class GroupSerializer(ModelSerializer):
-    user = UserSerializer()
+    create_by = UserSerializer()
 
     class Meta:
         model = Group
         fields = ['id', 'name', 'created_date', 'create_by']
 
+    # def create(self, validated_data):
+    #     group = Group(**validated_data)
+    #     user = self.context['request'].user
+    #     if group.create_by == user.pk:
+    #         GroupMember.objects.create(group=group, user=user, is_leader=True)
+    #     else:
+    #         GroupMember.objects.create(group=group, user=user, is_leader=False)
+    #     group.save()
+    #
+    #     return group
+
 
 class GroupMemberSerializer(ModelSerializer):
     class Meta:
         model = GroupMember
-        fields = '__all__'
+        fields = ['id', 'group', 'user', 'is_leader']
 
 
 class TransactionCategorySelfSerializer(ModelSerializer):
@@ -61,7 +75,7 @@ class TransactionCategoryGroupSerializer(ModelSerializer):
 class TransactionSelfSerializer(ModelSerializer):
     class Meta:
         model = TransactionSelf
-        fields = ['id', 'name', 'amount', 'timestamp', 'description', 'transaction_category', 'user']
+        fields = ['id', 'name', 'amount', 'timestamp', 'description', 'created_date', 'transaction_category', 'user']
         # extra_kwargs = {
         #     'user': {
         #         'write_only': True
@@ -73,7 +87,7 @@ class TransactionSelfSerializer(ModelSerializer):
 class TransactionGroupSerializer(ModelSerializer):
     class Meta:
         model = TransactionGroup
-        fields = ['id', 'name', 'amount', 'description', 'created_date', 'transaction_category', 'group']
+        fields = ['id', 'name', 'amount', 'timestamp', 'description', 'created_date', 'transaction_category', 'group', 'user', 'accept']
         # extra_kwargs = {
         #     'group': {
         #         'write_only': True
@@ -91,8 +105,7 @@ class FreetimeOptionSerializer(ModelSerializer):
 
 class SurveySerializer(ModelSerializer):
     group = GroupSerializer()
-    options = FreetimeOptionSerializer(many=True)
 
     class Meta:
         model = Survey
-        fields = ['id', 'options', 'group']
+        fields = ['id', 'name', 'creator', 'group']
