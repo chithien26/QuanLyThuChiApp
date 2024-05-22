@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'rest_framework.authtoken',
     'drf_yasg',
+
 ]
 
 MIDDLEWARE = [
@@ -129,10 +130,12 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 2,
-    'DEFAULT_AUTHENTICATION_CLASSED': ('oauth2_provider.contrib.rest_framework.OAuth2Authentication'),
     'DEFAULT_PARSER_CLASSED': ['rest_framework.parsers.FileUploadParser'],
-    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.BasicAuthentication',
-                                       'rest_framework.authentication.TokenAuthentication'],
+
+
 }

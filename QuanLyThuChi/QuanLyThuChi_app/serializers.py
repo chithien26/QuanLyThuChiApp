@@ -17,10 +17,11 @@ class UserSerializer(ModelSerializer):
         }
 
     def create(self, validated_data):
-        user = User(**validated_data)
-        user.set_password(validated_data["password"])
-        user.save()
+        data = validated_data.copy()
 
+        user = User(**data)
+        user.set_password(user.password)
+        user.save()
         return user
 
 
@@ -58,6 +59,11 @@ class TransactionCategorySelfSerializer(ModelSerializer):
         #         'write_only': True
         #     }
         # }
+
+        def create(self, validated_data):
+            user = self.context['request'].user
+            category = TransactionCategorySelf.objects.create(user=user, **validated_data)
+            return category
 
 
 class TransactionCategoryGroupSerializer(ModelSerializer):
