@@ -280,13 +280,4 @@ class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Ret
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
-<<<<<<< HEAD
     permission_classes = [permissions.IsAuthenticated]
-
-
-
-
-
-=======
-    permission_classes = [permissions.IsAuthenticated]
->>>>>>> 366b05f3bb3b2fe111ae7dbb6fe1eea905af4df5
