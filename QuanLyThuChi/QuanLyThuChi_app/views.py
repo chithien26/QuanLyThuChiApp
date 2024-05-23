@@ -83,7 +83,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
         return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='add_transaction', detail=False)
-    def add_transaction_category(self, request):
+    def add_transaction(self, request):
         data = request.data
         name = data.get('name')
         amount = data.get('amount')
@@ -183,12 +183,14 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
     # def update(self, request, pk):
     #     pass
 
-    @action(methods=['post'], url_path='add_transaction', detail=True)
-    def add_transaction(self, request, pk):
-        t = self.get_object().transactionself_set.create(name=request.data.get('name'),
-                                                         amount=request.data.get('amount'),
-                                                         description=request.data.get('description'),
-                                                         transaction_category=request.data.get('transaction_category'))
+    # @action(methods=['post'], url_path='add_transaction', detail=True)
+    # def add_transaction(self, request, pk):
+    #     t = self.get_object().transactionself_set.create(name=request.data.get('name'),
+    #                                                      amount=request.data.get('amount'),
+    #                                                      description=request.data.get('description'),
+    #                                                      transaction_category=request.data.get('transaction_category'),
+    #                                                      user=self.get_object().user)
+
         return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
 
 
@@ -204,13 +206,13 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
             queryset = queryset.filter(transaction_type__icontains=type)
         return queryset
 
-    @action(methods=['post'], url_path='add_transaction', detail=True)
-    def add_transaction(self, request, pk):
-        t = self.get_object().transactionself_set.create(name=request.data.get('name'),
-                                                         amount=request.data.get('amount'),
-                                                         description=request.data.get('description'),
-                                                         transaction_category=request.data.get('transaction_category'))
-        return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
+    # @action(methods=['post'], url_path='add_transaction', detail=True)
+    # def add_transaction(self, request, pk):
+    #     t = self.get_object().transactionself_set.create(name=request.data.get('name'),
+    #                                                      amount=request.data.get('amount'),
+    #                                                      description=request.data.get('description'),
+    #                                                      transaction_category=request.data.get('transaction_category'))
+    #     return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
 
 
 class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
@@ -245,7 +247,10 @@ class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Ret
     permission_classes = [permissions.IsAuthenticated]
 
 
+
+
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
     permission_classes = [permissions.IsAuthenticated]
+
