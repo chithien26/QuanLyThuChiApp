@@ -78,7 +78,7 @@ class BaseModelTransaction(BaseModel):
 
     name = models.CharField(max_length=50, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    timestamp = models.DateField()
+    timestamp = models.DateField(default=date.today())
     description = models.TextField(blank=True, null=True)
 
 
