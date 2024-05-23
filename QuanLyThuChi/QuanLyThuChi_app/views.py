@@ -22,9 +22,10 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [MultiPartParser, ]
-    permission_classes = [IsAdminUser]
-    authentication_classes = [BasicAuthentication, TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
+    # def login(self, request, *args, **kwargs):
+    #     user = authen
     # def get_permissons_admin(self, request):
     #     user = request.user
     #     if user.account_type == 'Admin':
@@ -115,6 +116,7 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
     queryset = Group.objects.filter(active=True)
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
+
 
     @action(methods=['post'], url_name='add_member', detail=True)
     def add_member(self, request, pk):

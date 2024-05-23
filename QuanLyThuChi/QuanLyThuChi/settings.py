@@ -136,6 +136,28 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 2,
     'DEFAULT_PARSER_CLASSED': ['rest_framework.parsers.FileUploadParser'],
+}
 
+CLIENT_ID = "mZuKZxgBnqLukNUVHSxZMmA19GGsE0zmwBicLkADZiGQgBp8X8RbEipfhsm8RANOASjz2yz9ZXL50faWH0ofNtDFzESFCT81jsXOERnYV78B2MVeRxF10RqsR2CdjQ7x"
+CLIENT_SECRET = "kNU2VQdDjC8czhz1KDXNlGvghcB0EBX2CXoqXjyZ5oETarHnjNHMdPzOElUjg3F6pglXqfcevxI2P2fWGk0UdG442oRJ7tlXEkiamhDQht0mCWxcJUfrEssHeJaddvx2"
 
+import os
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
