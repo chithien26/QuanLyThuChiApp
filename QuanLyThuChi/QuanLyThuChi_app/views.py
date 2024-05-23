@@ -170,6 +170,24 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
                                                     group=group)
         return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
+    @action(methods=['post'], url_path='add_transaction', detail=False)
+    def add_transaction(self, request):
+        data = request.data
+        name = data.get('name')
+        amount = data.get('amount')
+        timestamp = data.get('timestamp')
+        transaction_category = data.get('transaction_category')
+        user = request.user
+        group = self.get_object()
+        if not name or not transaction_category:
+            return Response({'error': 'Name and transaction_type are required.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        tc = TransactionSelf.objects.create(name=name, amount=amount, timestamp=timestamp,
+                                            transaction_category=transaction_category,
+                                            user=user, group=group)
+        return Response(serializers.TransactionSelfSerializer(tc).data, status=status.HTTP_201_CREATED)
+
 
 class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = GroupMember.objects.filter(active=True)
@@ -265,44 +283,6 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPI
     permission_classes = [permissions.IsAuthenticated]
 
 
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.contrib.auth import authenticate
-from oauth2_provider.models import Application
-from oauth2_provider.oauth2_backends import get_oauthlib_core
-from django.http import JsonResponse
-import json
 
-
-# class o(viewsets.ViewSet):
-#     @action(methods=['post'], detail=False, url_path='token')
-#     def login(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#         user = authenticate(username=username, password=password)
-#
-#         if not user:
-#             return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         try:
-#             application = Application.objects.get(client_id='your_client_id')
-#         except Application.DoesNotExist:
-#             return Response({"error": "Application does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         oauthlib_core = get_oauthlib_core()
-#         headers, body, status_code = oauthlib_core.create_token_response(
-#             request._request,
-#             grant_type='password',
-#             client_id=application.client_id,
-#             client_secret=application.client_secret,
-#             username=username,
-#             password=password,
-#         )
-#
-#         if status_code == 200:
-#             return JsonResponse(json.loads(body))
-#         else:
-#             return Response(json.loads(body), status=status_code)
 
 
