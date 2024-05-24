@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'quanlythuchiapp',
         'USER': 'root',
-        'PASSWORD': 'chithien26@',
+        'PASSWORD': '123456',
         'PORT': ''
     }
 }
@@ -138,7 +138,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSED': ['rest_framework.parsers.FileUploadParser'],
 }
 
-CLIENT_ID = "mZuKZxgBnqLukNUVHSxZMmA19GGsE0zmwBicLkADZiGQgBp8X8RbEipfhsm8RANOASjz2yz9ZXL50faWH0ofNtDFzESFCT81jsXOERnYV78B2MVeRxF10RqsR2CdjQ7x"
+CLIENT_ID = "jsNSdBn1NegwL1LFVk7q4v7m3HJDut39spmJO2Lf"
 CLIENT_SECRET = "kNU2VQdDjC8czhz1KDXNlGvghcB0EBX2CXoqXjyZ5oETarHnjNHMdPzOElUjg3F6pglXqfcevxI2P2fWGk0UdG442oRJ7tlXEkiamhDQht0mCWxcJUfrEssHeJaddvx2"
 
 import os

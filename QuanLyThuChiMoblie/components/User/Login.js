@@ -5,6 +5,7 @@ import Style from "./Style";
 import { endpoints } from '../../configs/APIs';
 import APIs from '../../configs/APIs'; // Thêm import này
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login =() => {
     const [username, setUsername] = useState('');
@@ -23,7 +24,7 @@ const Login =() => {
         data.append('password', password);
         console.log('Data:', data.toString());
         try {
-            let res = await APIs.post(endpoints['token'],data,{
+            const res = await APIs.post(endpoints['token'],data,{
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
@@ -32,6 +33,8 @@ const Login =() => {
                 const { access_token, refresh_token } = res.data;
                 console.log('Access Token:', access_token);
                 console.log('Refresh Token:', refresh_token);
+                await AsyncStorage.setItem('access_token', access_token); // Lưu token
+                await AsyncStorage.setItem('refresh_token', refresh_token);
                 Alert.alert('Đăng nhập thành công', 'Chào mừng bạn quay lại');
                 // Lưu token hoặc chuyển hướng sang trang khác tại đây
                 navigation.navigate('Thu');

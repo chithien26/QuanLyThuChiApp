@@ -3,7 +3,7 @@ import React from 'react';
 import Login from './components/User/Login';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-
+import Register from './components/User/Register';
 import ThuTabs from './components/QuanLyThuChi/Thu';
 
 const Stack =createStackNavigator();

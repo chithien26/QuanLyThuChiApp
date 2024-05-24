@@ -22,8 +22,14 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
     parser_classes = [MultiPartParser, ]
     permission_classes = [permissions.IsAuthenticated]
 
-    @action(methods=['post'], detail=False, url_path='register')
+    def get_permissions(self):
+        if self.action in ['register']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+    @action(methods=['post'], detail=False, url_path='register', permission_classes=[permissions.AllowAny])
     def register(self, request):
+
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -287,3 +293,48 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPI
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from oauth2_provider.models import Application
+from oauth2_provider.oauth2_backends import get_oauthlib_core
+from django.http import JsonResponse
+import json
+
+
+# class o(viewsets.ViewSet):
+#     @action(methods=['post'], detail=False, url_path='token')
+#     def login(self, request):
+#         username = request.data.get("username")
+#         password = request.data.get("password")
+#         user = authenticate(username=username, password=password)
+#
+#         if not user:
+#             return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         try:
+#             application = Application.objects.get(client_id='your_client_id')
+#         except Application.DoesNotExist:
+#             return Response({"error": "Application does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         oauthlib_core = get_oauthlib_core()
+#         headers, body, status_code = oauthlib_core.create_token_response(
+#             request._request,
+#             grant_type='password',
+#             client_id=application.client_id,
+#             client_secret=application.client_secret,
+#             username=username,
+#             password=password,
+#         )
+#
+#         if status_code == 200:
+#             return JsonResponse(json.loads(body))
+#         else:
+#             return Response(json.loads(body), status=status_code)
+
+
