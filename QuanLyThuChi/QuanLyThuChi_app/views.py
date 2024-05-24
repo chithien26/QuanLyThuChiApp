@@ -20,12 +20,12 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [MultiPartParser, ]
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
-    def get_permissions(self):
-        if self.action in ['register']:
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+    # def get_permissions(self):
+    #     if self.action in ['register']:
+    #         return [permissions.AllowAny()]
+    #     return [permissions.IsAuthenticated()]
 
     @action(methods=['post'], detail=False, url_path='register', permission_classes=[permissions.AllowAny])
     def register(self, request):
@@ -65,7 +65,7 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
     @action(methods=['get'], url_path='transaction_category', detail=False)
     def get_transaction_category_self(self, request):
         user = request.user
-        transaction_category = self.get_object().transactioncategoryself_set.filter(active=True)
+        transaction_category = TransactionCategorySelf.objects.filter(Q(user=user) & Q(active=True))
         type = request.query_params.get('type')
         if type:
             transaction_category = TransactionCategorySelf.objects.filter(Q(user=user) & Q(transaction_type=type))
@@ -75,9 +75,9 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
 
     @action(methods=['get'], url_path='transaction', detail=False)
     def get_transaction_self(self, request):
-        transaction = self.get_object().transactionself_set.filter(active=True)
-        type = request.query_params.get('type')
         user = request.user
+        transaction = TransactionSelf.objects.filter(Q(active=True) & Q(user=user))
+        type = request.query_params.get('type')
         if type:
             transaction = TransactionSelf.objects.filter(Q(user=user) & Q(transaction_category__transaction_type=type))
         return Response(serializers.TransactionSelfSerializer(transaction, many=True).data,
@@ -129,7 +129,6 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
 class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Group.objects.filter(active=True)
     serializer_class = GroupSerializer
-
     # permission_classes = [permissions.IsAuthenticated]
 
     @action(methods=['get'], url_path='members', detail=True)
@@ -229,10 +228,15 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
 
     @action(methods=['put'], url_path='update', detail=True)
     def update_category(self, request, pk):
-        transaction_category = TransactionCategorySelf.objects.get(id=pk, user=request.user)
+        try:
+            transaction_category = TransactionCategorySelf.objects.get(pk=pk)
+        except TransactionCategorySelf.DoesNotExist:
+            return Response({"error": "Transaction category self not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = TransactionCategorySelfSerializer(transaction_category, data=request.data, partial=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -248,6 +252,17 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
             queryset = queryset.filter(transaction_type__icontains=type)
         return queryset
 
+    @action(methods=['put'], url_path='update', detail=True)
+    def update_category(self, request, pk):
+        try:
+            transaction_category = TransactionCategoryGroup.objects.get(pk=pk)
+        except TransactionCategorySelf.DoesNotExist:
+            return Response({"error": "Transaction category group not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TransactionCategoryGroupSerializer(transaction_category, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # @action(methods=['post'], url_path='add_transaction', detail=True)
     # def add_transaction(self, request, pk):
     #     t = self.get_object().transactionself_set.create(name=request.data.get('name'),
@@ -269,6 +284,17 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
             queryset = queryset.filter(transaction_category__transaction_type__icontains=type)
         return queryset
 
+    @action(methods=['put'], url_path='update', detail=True)
+    def update_transaction(self, request, pk):
+        try:
+            transaction = TransactionSelf.objects.get(pk=pk)
+        except TransactionSelf.DoesNotExist:
+            return Response({"error": "Transaction self not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TransactionSelfSerializer(transaction, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionGroup.objects.filter(active=True)
@@ -282,6 +308,17 @@ class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.R
             queryset = queryset.filter(transaction_category__transaction_type__icontains=type)
         return queryset
 
+    @action(methods=['put'], url_path='update', detail=True)
+    def update_transaction(self, request, pk):
+        try:
+            transaction = TransactionGroup.objects.get(pk=pk)
+        except TransactionGroup.DoesNotExist:
+            return Response({"error": "Transaction group not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TransactionGroupSerializer(transaction, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = FreetimeOption.objects.filter(active=True)
