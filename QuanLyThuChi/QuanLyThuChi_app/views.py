@@ -1,12 +1,9 @@
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import viewsets, generics, permissions, status
-from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from QuanLyThuChi_app import serializers
 from .serializers import *
@@ -19,7 +16,7 @@ def index(request):
     return HttpResponse("trang chu")
 
 
-class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
+class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [MultiPartParser, ]
@@ -34,6 +31,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
                             status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     # def login(self, request, *args, **kwargs):
     #     user = authen
     # def get_permissons_admin(self, request):
@@ -125,17 +123,33 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
 class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Group.objects.filter(active=True)
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
+    # permission_classes = [permissions.IsAuthenticated]
+
+    @action(methods=['get'], url_path='members', detail=True)
+    def get_member_list(self, request, pk):
+        members = GroupMember.objects.filter(group__id=pk)
+        return Response(serializers.GroupMemberSerializer(members, many=True).data, status=status.HTTP_200_OK)
 
     @action(methods=['post'], url_name='add_member', detail=True)
     def add_member(self, request, pk):
         data = request.data
-        user = data.get('user')
-        group = data.get('group')
+        user_id = data.get('user_id')
+        user = User.objects.get(pk=user_id)
+        group = Group.objects.get(pk=pk)
         # is_leader = False
-        member = self.get_object().groupmember_set.create(user=user, group=group,)
+        member = self.get_object().groupmember_set.create(user=user, group=group)
         return Response(serializers.GroupMemberSerializer(member).data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['post'], url_path='delete_member', detail=True)
+    def delete_member(self, request, pk):
+        data = request.data
+        user_id = data.get('user_id')
+        user = User.objects.get(pk=user_id)
+        group = Group.objects.get(pk=pk)
+        member = GroupMember.objects.filter(user=user, group=group)
+        member.delete()
+        return Response({"message": "User removed from group"}, status=status.HTTP_200_OK)
 
     @action(methods=['get'], url_path='transaction_category', detail=True)
     def get_transaction_category_group(self, request, pk):
@@ -198,7 +212,7 @@ class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.List
 class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionCategorySelf.objects.filter(active=True)
     serializer_class = TransactionCategorySelfSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -207,19 +221,13 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
             queryset = queryset.filter(transaction_type__icontains=type)
         return queryset
 
-    # @action(methods=['put'], url_path='update_transaction_category', detail=True)
-    # def update(self, request, pk):
-    #     pass
+    @action(methods=['put'], url_path='update', detail=True)
+    def update_category(self, request, pk):
+        transaction_category = TransactionCategorySelf.objects.get(id=pk, user=request.user)
+        serializer = TransactionCategorySelfSerializer(transaction_category, data=request.data, partial=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # @action(methods=['post'], url_path='add_transaction', detail=True)
-    # def add_transaction(self, request, pk):
-    #     t = self.get_object().transactionself_set.create(name=request.data.get('name'),
-    #                                                      amount=request.data.get('amount'),
-    #                                                      description=request.data.get('description'),
-    #                                                      transaction_category=request.data.get('transaction_category'),
-    #                                                      user=self.get_object().user)
-
-        return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
 
 
 class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
@@ -273,8 +281,6 @@ class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Ret
     queryset = FreetimeOption.objects.filter(active=True)
     serializer_class = FreetimeOptionSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
 
 
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):

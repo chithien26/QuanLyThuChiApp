@@ -6,7 +6,7 @@ from . import views
 router = DefaultRouter()
 router.register('users', views.UserViewSet, basename='users')
 router.register('groups', views.GroupViewSet, basename='groups')
-router.register('group_member', views.GroupViewSet, basename='group_member')
+router.register('group_member', views.GroupMemberViewSet, basename='group_member')
 router.register('category_self', views.TransactionCategorySelfViewSet, basename='category_self')
 router.register('category_group', views.TransactionCategoryGroupViewSet, basename='category_group')
 router.register('transaction_self', views.TransactionSelfViewSet, basename='transaction_self')
