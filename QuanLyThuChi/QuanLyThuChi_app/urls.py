@@ -14,6 +14,7 @@ router.register('transaction_group', views.TransactionGroupViewSet, basename='tr
 router.register('freetime_option', views.FreetimeOptionViewSet, basename='freetime_option')
 router.register('survey', views.SurveyViewSet, basename='survey')
 
+
 urlpatterns = [
     path('', include(router.urls)),
 ]

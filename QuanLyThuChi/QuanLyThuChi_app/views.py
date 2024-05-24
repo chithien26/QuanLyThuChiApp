@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from QuanLyThuChi_app import serializers
 from .serializers import *
@@ -24,6 +25,20 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
     parser_classes = [MultiPartParser, ]
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_permissions(self):
+        if self.action in ['register']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+    @action(methods=['post'], detail=False, url_path='register', permission_classes=[permissions.AllowAny])
+    def register(self, request):
+
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({'status': 'user created', 'user': UserSerializer(user).data},
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # def login(self, request, *args, **kwargs):
     #     user = authen
     # def get_permissons_admin(self, request):
@@ -83,7 +98,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
         return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='add_transaction', detail=False)
-    def add_transaction_category(self, request):
+    def add_transaction(self, request):
         data = request.data
         name = data.get('name')
         amount = data.get('amount')
@@ -183,12 +198,14 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
     # def update(self, request, pk):
     #     pass
 
-    @action(methods=['post'], url_path='add_transaction', detail=True)
-    def add_transaction(self, request, pk):
-        t = self.get_object().transactionself_set.create(name=request.data.get('name'),
-                                                         amount=request.data.get('amount'),
-                                                         description=request.data.get('description'),
-                                                         transaction_category=request.data.get('transaction_category'))
+    # @action(methods=['post'], url_path='add_transaction', detail=True)
+    # def add_transaction(self, request, pk):
+    #     t = self.get_object().transactionself_set.create(name=request.data.get('name'),
+    #                                                      amount=request.data.get('amount'),
+    #                                                      description=request.data.get('description'),
+    #                                                      transaction_category=request.data.get('transaction_category'),
+    #                                                      user=self.get_object().user)
+
         return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
 
 
@@ -204,13 +221,13 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
             queryset = queryset.filter(transaction_type__icontains=type)
         return queryset
 
-    @action(methods=['post'], url_path='add_transaction', detail=True)
-    def add_transaction(self, request, pk):
-        t = self.get_object().transactionself_set.create(name=request.data.get('name'),
-                                                         amount=request.data.get('amount'),
-                                                         description=request.data.get('description'),
-                                                         transaction_category=request.data.get('transaction_category'))
-        return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
+    # @action(methods=['post'], url_path='add_transaction', detail=True)
+    # def add_transaction(self, request, pk):
+    #     t = self.get_object().transactionself_set.create(name=request.data.get('name'),
+    #                                                      amount=request.data.get('amount'),
+    #                                                      description=request.data.get('description'),
+    #                                                      transaction_category=request.data.get('transaction_category'))
+    #     return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
 
 
 class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
@@ -245,7 +262,55 @@ class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Ret
     permission_classes = [permissions.IsAuthenticated]
 
 
+
+
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
+
     permission_classes = [permissions.IsAuthenticated]
+
+    permission_classes = [permissions.IsAuthenticated]
+
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from oauth2_provider.models import Application
+from oauth2_provider.oauth2_backends import get_oauthlib_core
+from django.http import JsonResponse
+import json
+
+
+# class o(viewsets.ViewSet):
+#     @action(methods=['post'], detail=False, url_path='token')
+#     def login(self, request):
+#         username = request.data.get("username")
+#         password = request.data.get("password")
+#         user = authenticate(username=username, password=password)
+#
+#         if not user:
+#             return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         try:
+#             application = Application.objects.get(client_id='your_client_id')
+#         except Application.DoesNotExist:
+#             return Response({"error": "Application does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         oauthlib_core = get_oauthlib_core()
+#         headers, body, status_code = oauthlib_core.create_token_response(
+#             request._request,
+#             grant_type='password',
+#             client_id=application.client_id,
+#             client_secret=application.client_secret,
+#             username=username,
+#             password=password,
+#         )
+#
+#         if status_code == 200:
+#             return JsonResponse(json.loads(body))
+#         else:
+#             return Response(json.loads(body), status=status_code)
+
+
