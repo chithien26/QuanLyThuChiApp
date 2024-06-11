@@ -1,161 +1,143 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import React, { useState} from 'react';
+import { View, Text, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from "react-native";
+import { Button, HelperText, TextInput, TouchableRipple } from "react-native-paper";
 import APIs, { endpoints } from '../../configs/APIs';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import Style from './Style';
+import MyStyles from '../../styles/MyStyles';
 
 const Register = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [avatar, setAvatar] = useState(null); // Hình ảnh sẽ được lưu dưới dạng base64
-  const [account_type, setAccount_type]= useState('user')
+  const [user, setUser] = useState({account_type: 'user'});
+  const [err, setErr] = useState(false);
+  const fields = [{
+    label: "Tên",
+    icon: "text",
+    field: "first_name"
+  },{
+    label: "Họ và tên lót",
+    icon: "text",
+    field: "last_name"
+  },{
+    label: "Địa chỉ Email",
+    icon: "text",
+    field: "email"
+  },{
+    label: "Tên đăng nhập",
+    icon: "text",
+    field: "username"
+  },{
+    label: "Mật khẩu",
+    icon: "eye",
+    field: "password",
+    secureTextEntry: true
+  },{
+    label: "Xác nhận mật khẩu",
+    icon: "eye",
+    field: "confirm",
+    secureTextEntry: true
+  },
+]
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+ 
+
+  const picker = async ()=>{
+    const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted')
+        Alert.alert("Lỗi", "Chưa cấp quyền truy cập!");
+      else {
+        let res = await ImagePicker.launchImageLibraryAsync();
+        if (!res.canceled) {
+            updateSate("avatar", res.assets[0]);
+        }
+      }
+  }
+  const updateSate = (field, value) => {
+    setUser(current =>{
+      return {...current,[field]: value}
+    })
+  }
+  const removeAvatar = () => {
+    setUser(current => {
+      const newUser = { ...current };
+      delete newUser.avatar;
+      return newUser;
+    });
+  }
   
   const DangKi = async () => {
-    try {     
-      const formData = new FormData();
-      formData.append('username', username);
-      formData.append('password', password);
-      formData.append('first_name', firstName);
-      formData.append('last_name', lastName);
-      formData.append('email', email);
-      formData.append('account_type', account_type);
-      if (avatar) {
-        formData.append('avatar', {
-          uri: avatar,
-          type: 'image/jpeg', // hoặc 'image/png'
-          name: 'avatar.jpg', // hoặc 'avatar.png'
+    if(user['password'] !== user['confirm'])
+      setErr(true);
+    else {
+      setErr(false)
+      
+      try {     
+       let form = new FormData();
+        for(let f in user)
+          if (f !== 'confirm')
+            if ( f  === 'avatar')
+              form.append(f, {
+                uri: user.avatar.uri,
+                name: user.avatar.fileName,
+                type: user.avatar.type
+            });
+            else {
+              form.append(f, user[f]);             
+            }
+      console.log(form)
+
+      setLoading(true);        
+      let response = await APIs.post(endpoints['register'], form, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         });
-      }
-      const response = await APIs.post(endpoints['register'], formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-  
-      if (response.status === 201) {
-        Alert.alert('Đăng ký thành công', 'Bạn có thể đăng nhập bây giờ.');
-        navigation.navigate('Login');
-      } else {
-        Alert.alert('Đăng ký thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
-      }
+    
+        if (response.status === 201) {
+          Alert.alert('Đăng ký thành công', 'Bạn có thể đăng nhập ngay bây giờ.');
+          navigation.navigate('Login');
+        } else {
+          Alert.alert('Đăng ký thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
+        }  
     } catch (error) {
       console.error('Lỗi khi đăng ký:', error);
-      Alert.alert('Đăng ký thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const ChonAnhCLick = async () => {
-    const result = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (result.granted === false) {
-      Alert.alert('Quyền truy cập bị từ chối', 'Bạn cần cấp quyền truy cập để chọn ảnh đại diện.');
-      return;
-    }
-  
-    let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-  
-    if (!pickerResult.cancelled) {
-      setAvatar(pickerResult.uri);
-    }
-  };
-  
+    };
+  }
+    
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Tài khoản"
-        onChangeText={text => setUsername(text)}
-        value={username}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Mật khẩu"
-        onChangeText={text => setPassword(text)}
-        value={password}
-        secureTextEntry={true}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Họ"
-        onChangeText={text => setFirstName(text)}
-        value={firstName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Tên"
-        onChangeText={text => setLastName(text)}
-        value={lastName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        onChangeText={text => setEmail(text)}
-        value={email}
-      />
-      <TouchableOpacity style={styles.avatarButton} onPress={ChonAnhCLick}>
-        <Text style={styles.avatarButtonText}>Chọn ảnh đại diện</Text>
-      </TouchableOpacity>
-      {avatar && <Image source={{ uri: `data:image/jpeg;base64,${avatar}` }} style={styles.avatar} />}
-      <TouchableOpacity style={styles.registerButton} onPress={DangKi}>
-        <Text style={styles.registerButtonText}>Đăng ký</Text>
-      </TouchableOpacity>
+    <View style={MyStyles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS ==='ios' ? 'padding' : 'height'}>
+        <ScrollView>
+        <Text style={MyStyles.subject}>Đăng kí người dùng</Text>
+          {fields.map(f=> <TextInput style={MyStyles.margin} key={f.field} label={f.label} onChangeText={t => updateSate(f.field,t)} secureTextEntry= {f.secureTextEntry} right={<TextInput.Icon icon={f.icon} />} />)}
+        <TouchableRipple style={Style.button} onPress={picker}>
+          <Text style={Style.buttonText}>Chọn ảnh đại diện</Text>
+        </TouchableRipple>
+        {user.avatar && (
+            <View style={[Style.avatarContainer, MyStyles.margin]}>
+              <Image source={{ uri: user.avatar.uri }} style={MyStyles.avatar} />
+              <TouchableOpacity style={Style.removeButton} onPress={removeAvatar}>
+                <Text style={Style.removeButtonText}>X</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        <HelperText type="error" visible={err}>
+          MẬT KHẨU KHÔNG KHỚP!
+        </HelperText>
+
+
+        <Button loading={loading} onPress={DangKi} icon="account" mode="contained" >ĐĂNG KÝ</Button>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
+    
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  input: {
-    width: '100%',
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  avatarButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  avatarButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginTop: 10,
-  },
-  registerButton: {
-    backgroundColor: '#28a745',
-    paddingVertical: 15,
-    paddingHorizontal: 50,
-    borderRadius: 5,
-    marginTop: 20,
-  },
-  registerButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-});
 
 export default Register;

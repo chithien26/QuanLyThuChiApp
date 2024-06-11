@@ -1,49 +1,74 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
+import React, { useContext, useState } from 'react';
+import { View, Text,  Alert } from "react-native";
+import { Button,  TextInput  } from "react-native-paper";
 import MyStyles from "../../styles/MyStyles";
 import Style from "./Style";
-import { endpoints } from '../../configs/APIs';
+import { authApi, endpoints } from '../../configs/APIs';
 import APIs from '../../configs/APIs'; // Thêm import này
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CLIENT_ID, CLIENT_SECRET } from '@env';
+import { MyDispatchContext } from '../../configs/Contexts';
 
 const Login =() => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const dispatch =useContext(MyDispatchContext);
+    const [user, setUser] = useState({});
+    const fields = [{
+        "label": "Tên đăng nhập",
+        "icon": "account",
+        "name": "username"
+    }, {
+        "label": "Mật khẩu",
+        "icon": "eye",
+        "name": "password",
+        "secureTextEntry": true
+    }];
+    const updateSate = (field, value) => {
+        setUser(current => {
+            return {...current, [field]: value}
+        });
+    }
     const navigation = useNavigation();
-
+    const [loading, setLoading] = useState(false);
+    
     const DangNhapClick = async ()=> {
-        const client_id = 'W54DfhPMIcoW4r11qdnTxXz53z9ypDfhqlRTFkIn';
-        const client_secret = 'yL4g98Nd4omhd28tNS49omEsGr5VOczCVKpcVZuzZXFIAJ4BHZE9LRqibz645UYVXUo1YYbcLhKovp66BMB2k6TJaGm0R7qpTWyLkC6ZFNONHYSBK5e5zyH2KQSco4AS';
-        const grant_type = 'password';
-        const data = new URLSearchParams();
-        data.append('client_id', client_id);
-        data.append('client_secret', client_secret);
-        data.append('grant_type', grant_type);
-        data.append('username', username);
-        data.append('password', password);
-        console.log('Data:', data.toString());
         try {
-            const res = await APIs.post(endpoints['token'],data,{
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-            if (res.status === 200) {
-                const { access_token, refresh_token } = res.data;
-                console.log('Access Token:', access_token);
-                console.log('Refresh Token:', refresh_token);
-                await AsyncStorage.setItem('access_token', access_token); // Lưu token
-                await AsyncStorage.setItem('refresh_token', refresh_token);
+            const payload = {
+                ...user,
+                'client_id': CLIENT_ID,
+                'client_secret': CLIENT_SECRET,
+                'grant_type': 'password'
+            };
+
+            // Chuyển đổi payload thành chuỗi URL-encoded
+            const urlEncodedPayload = new URLSearchParams(payload).toString();
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            let res = await APIs.post(endpoints['login'], urlEncodedPayload, { headers });
+            console.info(res.data);
+            
+            await AsyncStorage.setItem("token", res.data.access_token);
+
+            setTimeout(async() => {
+                let user = await authApi(res.data.access_token).get(endpoints['current-user']);
+                console.info(user.data);
+                dispatch({
+                    "type":"login",
+                    "payload":user.data
+                })
+            }, 1000);
+            if (res.status === 200) {                
                 Alert.alert('Đăng nhập thành công', 'Chào mừng bạn quay lại');
                 // Lưu token hoặc chuyển hướng sang trang khác tại đây
-                navigation.navigate('Thu');
-            } else {
-                Alert.alert('Đăng nhập thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
-            }
+                navigation.navigate('Profile');
+}             else {
+                Alert.alert('Đăng nhập thất bại', 'Tài khoản hoặc mật khẩu không chính xác.');
+            }                     
         } catch (error) {
             console.error('Lỗi khi đăng nhập:', error);
-            Alert.alert('Đăng nhập thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
+            Alert.alert('Đăng nhập thất bại', 'Tài khoản hoặc mật khẩu không chính xác.');
         }
     };
            
@@ -54,38 +79,14 @@ const Login =() => {
     };
 
     return (
-        <View style={MyStyles.container}>
-            <Text style={MyStyles.subject}>Ứng dụng quản lý chi tiêu </Text>                           
-                <View style={Style.formContainer}>
-                    <TextInput
-                        style={Style.input}
-                        placeholder="Tên đăng nhập"
-                        onChangeText={text => setUsername(text)}
-                        value={username}
-                    />
-                    <TextInput
-                        style={Style.input}
-                        placeholder="Mật khẩu"
-                        onChangeText={text => setPassword(text)}
-                        value={password}
-                        secureTextEntry={true}
-                    />
-                    <View style={Style.buttonRow}>
-                        <TouchableOpacity 
-                            style={Style.button} 
-                            onPress={DangNhapClick}>
-                            <Text style={Style.buttonText}>Đăng nhập</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={Style.button}
-                            onPress={DangKiClick}>
-                            <Text style={Style.buttonText}>Đăng ký</Text>
-                        </TouchableOpacity>
-                    </View>
-                    
-                </View>
-                
-        </View>
+        
+            <View style={[MyStyles.container, MyStyles.margin]}>
+                <Text style={MyStyles.subject}>ĐĂNG NHẬP NGƯỜI DÙNG</Text>
+                {fields.map(c => <TextInput secureTextEntry={c.secureTextEntry} value={user[c.name]} onChangeText={t => updateSate(c.name, t)} style={MyStyles.margin} key={c.name} label={c.label} right={<TextInput.Icon icon={c.icon} />} />)}
+                <Button icon="account" loading={loading} mode="contained" onPress={DangNhapClick}>ĐĂNG NHẬP</Button>
+                 <Button style={MyStyles.margin} icon="account" loading={loading} mode="contained" onPress={DangKiClick}>ĐĂNG KÍ</Button>
+            </View>
+       
     );
 };
 

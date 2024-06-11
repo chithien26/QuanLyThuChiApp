@@ -21,8 +21,8 @@ function HomeScreen() {
 const ThuTabs = () => {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="HomeScreen" component={HomeScreen} options={{ title: 'Thu chi cá nhân' }} />
-      <Tab.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: 'Thu chi nhóm' }} />
+      <Tab.Screen name="HomeScreen" component={HomeScreen} options={{ title: 'Thu ' }} />
+      <Tab.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: 'chi' }} />
     </Tab.Navigator>
   );
 };
