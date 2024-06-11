@@ -175,6 +175,24 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
                                                     group=group)
         return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
+    @action(methods=['post'], url_path='add_transaction', detail=False)
+    def add_transaction(self, request):
+        data = request.data
+        name = data.get('name')
+        amount = data.get('amount')
+        timestamp = data.get('timestamp')
+        transaction_category = data.get('transaction_category')
+        user = request.user
+        group = self.get_object()
+        if not name or not transaction_category:
+            return Response({'error': 'Name and transaction_type are required.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        tc = TransactionSelf.objects.create(name=name, amount=amount, timestamp=timestamp,
+                                            transaction_category=transaction_category,
+                                            user=user, group=group)
+        return Response(serializers.TransactionSelfSerializer(tc).data, status=status.HTTP_201_CREATED)
+
 
 class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = GroupMember.objects.filter(active=True)
@@ -268,7 +286,8 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPI
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
 
-    permission_classes = [permissions.IsAuthenticated]
+
+
 
     permission_classes = [permissions.IsAuthenticated]
 
@@ -312,5 +331,6 @@ import json
 #             return JsonResponse(json.loads(body))
 #         else:
 #             return Response(json.loads(body), status=status_code)
+
 
 
