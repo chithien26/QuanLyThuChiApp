@@ -328,7 +328,40 @@ class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Ret
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+
+
+
+# class o(viewsets.ViewSet):
+#     @action(methods=['post'], detail=False, url_path='token')
+#     def login(self, request):
+#         username = request.data.get("username")
+#         password = request.data.get("password")
+#         user = authenticate(username=username, password=password)
+#
+#         if not user:
+#             return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         try:
+#             application = Application.objects.get(client_id='your_client_id')
+#         except Application.DoesNotExist:
+#             return Response({"error": "Application does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         oauthlib_core = get_oauthlib_core()
+#         headers, body, status_code = oauthlib_core.create_token_response(
+#             request._request,
+#             grant_type='password',
+#             client_id=application.client_id,
+#             client_secret=application.client_secret,
+#             username=username,
+#             password=password,
+#         )
+#
+#         if status_code == 200:
+#             return JsonResponse(json.loads(body))
+#         else:
+#             return Response(json.loads(body), status=status_code)
 
 
 
