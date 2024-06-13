@@ -9,7 +9,7 @@ import Nhom from "../QuanLyThuChi/Nhom"
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 
-const Tab = createBottomTabNavigator();
+
 const Profile = () => {
     const user = useContext(MyUserContext);
     const dispatch = useContext(MyDispatchContext);
@@ -18,11 +18,6 @@ const Profile = () => {
         dispatch({ type: "logout" });
         navigation.navigate('Login');
     };
-    
-
-    
-           
-    
     return (
         <View style={[MyStyles.container, MyStyles.margin]}>
             {user ? (
@@ -37,6 +32,5 @@ const Profile = () => {
             )}
         </View>        
     );
-
 }
 export default Profile;

@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_ROOT = '%s/courses/static/' % BASE_DIR
+MEDIA_ROOT = '%s/QuanLyThuChi_App/static/' % BASE_DIR
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-&7q5q4-%@(%^gv!f)mto!qj6lfo8ifoo-2zz$ja6o=8ad*$9%k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ALLOWED_HOSTS = [] #'192.168.64.1'
 
-ALLOWED_HOSTS = ['192.168.0.103']
 
 
 
@@ -44,12 +44,15 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'rest_framework.authtoken',
     'drf_yasg',
+    'corsheaders',
+    'cloudinary',
 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -89,7 +92,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'quanlythuchiapp',
         'USER': 'root',
-        'PASSWORD': '123456',
+        'PASSWORD': 'chithien26@',
         'PORT': ''
     }
 }
@@ -136,14 +139,40 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 2,
+    'PAGE_SIZE': 5,
     'DEFAULT_PARSER_CLASSED': ['rest_framework.parsers.FileUploadParser'],
 }
+OAUTH2_PROVIDER = {
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
+    'AUTHORIZATION_CODE_EXPIRE_SECONDS': 600,
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 864000,
+}
 
-CLIENT_ID = "mZuKZxgBnqLukNUVHSxZMmA19GGsE0zmwBicLkADZiGQgBp8X8RbEipfhsm8RANOASjz2yz9ZXL50faWH0ofNtDFzESFCT81jsXOERnYV78B2MVeRxF10RqsR2CdjQ7x"
+
+CLIENT_ID = "jsNSdBn1NegwL1LFVk7q4v7m3HJDut39spmJO2Lf"
 CLIENT_SECRET = "kNU2VQdDjC8czhz1KDXNlGvghcB0EBX2CXoqXjyZ5oETarHnjNHMdPzOElUjg3F6pglXqfcevxI2P2fWGk0UdG442oRJ7tlXEkiamhDQht0mCWxcJUfrEssHeJaddvx2"
 
+# import cloudinary
+# import cloudinary.uploader
+# import cloudinary.api
+
+# cloudinary.config(
+#     cloud_name = "chithien26",
+#     api_key = "853533217965125",
+#     api_secret = "Z1nIKQWR1-KUMMznOuMI_P3fUGo",
+# )
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'chithien26',
+    'API_KEY': '853533217965125',
+    'API_SECRET': 'Z1nIKQWR1-KUMMznOuMI_P3fUGo',
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 import os
 
 LOGGING = {
