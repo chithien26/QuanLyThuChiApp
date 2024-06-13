@@ -41,12 +41,15 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'rest_framework.authtoken',
     'drf_yasg',
+    'corsheaders',
+    'cloudinary',
 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -133,14 +136,40 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
     'DEFAULT_PARSER_CLASSED': ['rest_framework.parsers.FileUploadParser'],
 }
+OAUTH2_PROVIDER = {
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
+    'AUTHORIZATION_CODE_EXPIRE_SECONDS': 600,
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 864000,
+}
+
 
 CLIENT_ID = "jsNSdBn1NegwL1LFVk7q4v7m3HJDut39spmJO2Lf"
 CLIENT_SECRET = "kNU2VQdDjC8czhz1KDXNlGvghcB0EBX2CXoqXjyZ5oETarHnjNHMdPzOElUjg3F6pglXqfcevxI2P2fWGk0UdG442oRJ7tlXEkiamhDQht0mCWxcJUfrEssHeJaddvx2"
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# cloudinary.config(
+#     cloud_name = "chithien26",
+#     api_key = "853533217965125",
+#     api_secret = "Z1nIKQWR1-KUMMznOuMI_P3fUGo",
+# )
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'chithien26',
+    'API_KEY': '853533217965125',
+    'API_SECRET': 'Z1nIKQWR1-KUMMznOuMI_P3fUGo',
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 import os
 
 LOGGING = {

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count
 from django.template.response import TemplateResponse
 from django.urls import path
-
+from django.utils.html import mark_safe
 from .models import *
 
 
@@ -27,7 +27,11 @@ class FreetimeOptionInlineAdmin(admin.StackedInline):
 ###Admin###
 class UserAdmin(admin.ModelAdmin):
     list_display = ['id', 'username', 'first_name', 'last_name', 'date_joined', 'email']
+    # readonly_fields = ['avatar']
 
+    def avatar(self, user):
+        if user:
+            return mark_safe("<img src='/static/{url}' alt='{alt}' />".format(url=user.avatar.name))
 
 class GroupAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'create_by', 'created_date', 'active']

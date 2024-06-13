@@ -4,9 +4,12 @@ from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from QuanLyThuChi_app import serializers
 from .serializers import *
+
+
 
 
 # Create your views here.
@@ -16,11 +19,11 @@ def index(request):
     return HttpResponse("trang chu")
 
 
+
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [MultiPartParser, ]
-    # permission_classes = [permissions.IsAuthenticated]
 
     # def get_permissions(self):
     #     if self.action in ['register']:
@@ -73,7 +76,7 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
         return Response(serializers.TransactionCategorySelfSerializer(transaction_category, many=True).data,
                         status=status.HTTP_200_OK)
 
-    @action(methods=['get'], url_path='transaction', detail=False)
+    @action(methods=['get'], url_path='transactions', detail=False)
     def get_transaction_self(self, request):
         user = request.user
         transaction = TransactionSelf.objects.filter(Q(active=True) & Q(user=user))
@@ -83,35 +86,8 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
         return Response(serializers.TransactionSelfSerializer(transaction, many=True).data,
                         status=status.HTTP_200_OK)
 
-    @action(methods=['post'], url_path='add_transaction_category', detail=False)
-    def add_transaction_category(self, request):
-        data = request.data
-        name = data.get('name')
-        icon = data.get('icon')
-        transaction_type = data.get('transaction_type')
-        user = request.user
-        if not name or not transaction_type:
-            return Response({'error': 'Name and transaction_type are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        tc = TransactionCategorySelf.objects.create(name=name, icon=icon, transaction_type=transaction_type, user=user)
-        return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
-    @action(methods=['post'], url_path='add_transaction', detail=False)
-    def add_transaction(self, request):
-        data = request.data
-        name = data.get('name')
-        amount = data.get('amount')
-        timestamp = data.get('timestamp')
-        transaction_category = data.get('transaction_category')
-        user = request.user
-        if not name or not transaction_category:
-            return Response({'error': 'Name and transaction_type are required.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        tc = TransactionSelf.objects.create(name=name, amount=amount, timestamp=timestamp,
-                                            transaction_category=transaction_category,
-                                            user=user)
-        return Response(serializers.TransactionSelfSerializer(tc).data, status=status.HTTP_201_CREATED)
     # @action(methods=['get'], url_path='statistics', detail=True)
     # def statistics(self, request, pk):
     #     queryset = self.get_object().transactionself_set.filter(active=True)
@@ -129,7 +105,7 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
 class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Group.objects.filter(active=True)
     serializer_class = GroupSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+
 
     @action(methods=['get'], url_path='members', detail=True)
     def get_member_list(self, request, pk):
@@ -211,13 +187,11 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
 class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = GroupMember.objects.filter(active=True)
     serializer_class = GroupMemberSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionCategorySelf.objects.filter(active=True)
     serializer_class = TransactionCategorySelfSerializer
-    # permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -238,12 +212,23 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(methods=['post'], url_path='add', detail=False)
+    def add_transaction_category(self, request):
+        data = request.data
+        name = data.get('name')
+        icon = data.get('icon')
+        transaction_type = data.get('transaction_type')
+        user = request.user
+        if not name or not transaction_type:
+            return Response({'error': 'Name and transaction_type are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tc = TransactionCategorySelf.objects.create(name=name, icon=icon, transaction_type=transaction_type, user=user)
+        return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
 
 class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionCategoryGroup.objects.filter(active=True)
     serializer_class = TransactionCategoryGroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -275,7 +260,6 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
 class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionSelf.objects.filter(active=True)
     serializer_class = TransactionSelfSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -283,6 +267,23 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
         if type:
             queryset = queryset.filter(transaction_category__transaction_type__icontains=type)
         return queryset
+
+    @action(methods=['post'], url_path='add', detail=False)
+    def add_transaction(self, request):
+        data = request.data
+        name = data.get('name')
+        amount = data.get('amount')
+        timestamp = data.get('timestamp')
+        transaction_category = data.get('transaction_category')
+        user = request.user
+        if not name or not transaction_category:
+            return Response({'error': 'Name and transaction_type are required.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        tc = TransactionSelf.objects.create(name=name, amount=amount, timestamp=timestamp,
+                                            transaction_category=transaction_category,
+                                            user=user)
+        return Response(serializers.TransactionSelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['put'], url_path='update', detail=True)
     def update_transaction(self, request, pk):
@@ -299,7 +300,6 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
 class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionGroup.objects.filter(active=True)
     serializer_class = TransactionGroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -323,55 +323,12 @@ class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.R
 class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = FreetimeOption.objects.filter(active=True)
     serializer_class = FreetimeOptionSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
-
-
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.contrib.auth import authenticate
-from oauth2_provider.models import Application
-from oauth2_provider.oauth2_backends import get_oauthlib_core
-from django.http import JsonResponse
-import json
-
-
-# class o(viewsets.ViewSet):
-#     @action(methods=['post'], detail=False, url_path='token')
-#     def login(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#         user = authenticate(username=username, password=password)
-#
-#         if not user:
-#             return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         try:
-#             application = Application.objects.get(client_id='your_client_id')
-#         except Application.DoesNotExist:
-#             return Response({"error": "Application does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         oauthlib_core = get_oauthlib_core()
-#         headers, body, status_code = oauthlib_core.create_token_response(
-#             request._request,
-#             grant_type='password',
-#             client_id=application.client_id,
-#             client_secret=application.client_secret,
-#             username=username,
-#             password=password,
-#         )
-#
-#         if status_code == 200:
-#             return JsonResponse(json.loads(body))
-#         else:
-#             return Response(json.loads(body), status=status_code)
 
 

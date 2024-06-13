@@ -2,6 +2,7 @@ from datetime import date
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 
 # Create your models here.
@@ -20,7 +21,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
 
-    avatar = models.ImageField(upload_to='images/avatar/%Y/%m/%d/', null=True)
+    avatar = CloudinaryField('image')
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
 
     def __str__(self):
@@ -53,7 +54,7 @@ class BaseModelTransactionCategory(BaseModel):
         ('expense', 'Expense'),
     )
     name = models.CharField(max_length=50, unique=True)
-    icon = models.ImageField(upload_to='images/icon/', null=True)
+    icon = avatar = CloudinaryField('image')
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Expense')
 
 
