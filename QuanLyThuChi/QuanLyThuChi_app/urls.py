@@ -4,8 +4,8 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register('users', views.UserViewSet, basename='users')
-router.register('groups', views.GroupViewSet, basename='groups')
+router.register('user', views.UserViewSet, basename='user')
+router.register('group', views.GroupViewSet, basename='group')
 router.register('group_member', views.GroupMemberViewSet, basename='group_member')
 router.register('category_self', views.TransactionCategorySelfViewSet, basename='category_self')
 router.register('category_group', views.TransactionCategoryGroupViewSet, basename='category_group')
