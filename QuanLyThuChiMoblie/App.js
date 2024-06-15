@@ -11,8 +11,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import CaNhan from './components/QuanLyThuChi/CaNhan';
 import Nhom from './components/QuanLyThuChi/Nhom';
 
+
+
 const Stack =createStackNavigator();
 const Tab = createBottomTabNavigator();
+
 const MyTab =() =>{
   return (
     <Tab.Navigator>
