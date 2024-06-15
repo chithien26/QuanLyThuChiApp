@@ -62,8 +62,8 @@ const Login =() => {
             if (res.status === 200) {                
                 Alert.alert('Đăng nhập thành công', 'Chào mừng bạn quay lại');
                 // Lưu token hoặc chuyển hướng sang trang khác tại đây
-                navigation.navigate('Profile');
-}             else {
+                navigation.navigate('MyTab');
+            } else {
                 Alert.alert('Đăng nhập thất bại', 'Tài khoản hoặc mật khẩu không chính xác.');
             }                     
         } catch (error) {
