@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Ăn uống",
+    "transaction_type": "expense"
+  },
+  {
+    "name": "Mua sắm",
+    "transaction_type": "expense"
+  },
+  {
+    "name": "Đi chơi",
+    "transaction_type": "expense"
+  },
+  {
+    "name": "Tiền lương",
+    "transaction_type": "income"
+  },
+  {
+    "name": "Tiền thưởng",
+    "transaction_type": "income"
+  }
+]

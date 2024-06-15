@@ -53,12 +53,14 @@ class BaseModelTransactionCategory(BaseModel):
         ('income', 'Income'),
         ('expense', 'Expense'),
     )
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     icon = CloudinaryField('image', blank=True)
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Expense')
 
 
 class TransactionCategorySelf(BaseModelTransactionCategory):
+    class Meta:
+        unique_together = ('name', 'user')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -66,6 +68,8 @@ class TransactionCategorySelf(BaseModelTransactionCategory):
 
 
 class TransactionCategoryGroup(BaseModelTransactionCategory):
+    class Meta:
+        unique_together = ('name', 'group')
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):

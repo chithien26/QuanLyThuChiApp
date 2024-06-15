@@ -1,3 +1,5 @@
+import os
+
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
@@ -11,6 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from QuanLyThuChi_app import serializers, perm
 from .serializers import *
+import json
+from QuanLyThuChi import settings
 
 
 
@@ -47,15 +51,28 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
 
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            # tạo danh mục có sẵn cho user
-            # TransactionCategorySelf.objects.create(name='Ăn uống', transaction_type='expense', user=user)
-            # TransactionCategorySelf.objects.create(name='Mua sắm', transaction_type='expense', user=user)
-            # TransactionCategorySelf.objects.create(name='đi chơi', transaction_type='expense', user=user)
-            return Response({'status': 'user created', 'user': UserSerializer(user).data},
-                            status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                with transaction.atomic():
+                    user = serializer.save()
+
+                    # Đọc file JSON
+                    file_path = os.path.join(settings.BASE_DIR, 'QuanLyThuChi_App/static/data/default_category_self.json')
+                    with open(file_path, 'r', encoding='utf-8') as file:
+                        default_category_self = json.load(file)
+
+                    # Tạo danh mục có sẵn cho user
+                    for c in default_category_self:
+                        TransactionCategorySelf.objects.create(
+                            name=c['name'],
+                            transaction_type=c['transaction_type'],
+                            user=user
+                        )
+                return Response({'status': 'user created', 'user': UserSerializer(user).data},
+                                status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # def login(self, request, *args, **kwargs):
     #     user = authen
