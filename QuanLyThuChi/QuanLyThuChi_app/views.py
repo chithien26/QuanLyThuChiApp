@@ -231,9 +231,10 @@ class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.List
     permission_classes = [IsAuthenticated, ]
 
 
-class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
     queryset = TransactionCategorySelf.objects.filter(active=True)
     serializer_class = TransactionCategorySelfSerializer
+    permission_classes = [perm.OwnerAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -271,10 +272,10 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
         return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
 
-class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
     queryset = TransactionCategoryGroup.objects.filter(active=True)
     serializer_class = TransactionCategoryGroupSerializer
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [perm.OwnerAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -303,10 +304,10 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
     #     return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
 
 
-class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
     queryset = TransactionSelf.objects.filter(active=True)
     serializer_class = TransactionSelfSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [perm.OwnerAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -348,10 +349,10 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
     queryset = TransactionGroup.objects.filter(active=True)
     serializer_class = TransactionGroupSerializer
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [perm.OwnerAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
