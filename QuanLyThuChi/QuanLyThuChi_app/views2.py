@@ -1,14 +1,15 @@
-from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from QuanLyThuChi_app import serializers, perm
+from rest_framework.permissions import IsAuthenticated
+from QuanLyThuChi_app import perm
+from QuanLyThuChi_app import serializers
 from .serializers import *
+
+
 
 
 # Create your views here.
@@ -18,19 +19,17 @@ def index(request):
     return HttpResponse("trang chu")
 
 
+
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [MultiPartParser, ]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ]
 
     def get_permissions(self):
-        if self.action in ['list']:
-            return [perm.AdminAuthenticated()]
-        elif self.action in ['register']:
+        if self.action in ['register']:
             return [permissions.AllowAny()]
-        else:
-            return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated()]
 
     @action(methods=['post'], detail=False, url_path='register', permission_classes=[permissions.AllowAny])
     def register(self, request):
@@ -38,10 +37,8 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            # tạo danh mục có sẵn cho user
-            # TransactionCategorySelf.objects.create(name='Ăn uống', transaction_type='expense', user=user)
-            # TransactionCategorySelf.objects.create(name='Mua sắm', transaction_type='expense', user=user)
-            # TransactionCategorySelf.objects.create(name='đi chơi', transaction_type='expense', user=user)
+            #tạo danh mục có sẵn cho user
+
             return Response({'status': 'user created', 'user': UserSerializer(user).data},
                             status=status.HTTP_201_CREATED)
         else:
@@ -71,6 +68,27 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
 
         return Response(serializers.UserSerializer(user).data)
 
+    @action(methods=['get'], url_path='transaction_category', detail=False)
+    def get_transaction_category_self(self, request):
+        user = request.user
+        transaction_category = TransactionCategorySelf.objects.filter(Q(user=user) & Q(active=True))
+        type = request.query_params.get('type')
+        if type:
+            transaction_category = TransactionCategorySelf.objects.filter(Q(user=user) & Q(transaction_type=type))
+
+        return Response(serializers.TransactionCategorySelfSerializer(transaction_category, many=True).data,
+                        status=status.HTTP_200_OK)
+
+    @action(methods=['get'], url_path='transactions', detail=False)
+    def get_transaction_self(self, request):
+        user = request.user
+        transaction = TransactionSelf.objects.filter(Q(active=True) & Q(user=user))
+        type = request.query_params.get('type')
+        if type:
+            transaction = TransactionSelf.objects.filter(Q(user=user) & Q(transaction_category__transaction_type=type))
+        return Response(serializers.TransactionSelfSerializer(transaction, many=True).data,
+                        status=status.HTTP_200_OK)
+
     @action(methods=['get'], url_path='groups', detail=False)
     def groups(self, request):
         user = request.user
@@ -78,11 +96,25 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
         serializer = GroupSerializer(groups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    # @action(methods=['get'], url_path='statistics', detail=True)
+    # def statistics(self, request, pk):
+    #     queryset = self.get_object().transactionself_set.filter(active=True)
+    #     # month = self.request.query_params.get('month')
+    #     # date_now = date.today
+    #     # if month:
+    #     #     queryset = queryset.filter(created_date__month=month)
+    #     # else:
+    #     #     month = date_now
+    #     #     queryset = queryset.filter(created_date__month=month)
+    #
+    #     return Response(serializers.TransactionSelfSerializer(queryset).data, status=status.HTTP_200_OK)
+
 
 class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Group.objects.filter(active=True)
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated, ]
+
 
     @action(methods=['get'], url_path='members', detail=True)
     def get_member_list(self, request, pk):
@@ -170,16 +202,13 @@ class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.List
 class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionCategorySelf.objects.filter(active=True)
     serializer_class = TransactionCategorySelfSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [perm.OwnerAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
-        user = self.request.user
-        if self.action.__eq__('list'):
-            queryset = queryset.filter(user=user)
-            type = self.request.query_params.get('type')
-            if type:
-                queryset = queryset.filter(transaction_type=type)
+        type = self.request.query_params.get('type')
+        if type:
+            queryset = queryset.filter(transaction_type__icontains=type)
         return queryset
 
     @action(methods=['put'], url_path='update', detail=True)
@@ -243,16 +272,13 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
 class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionSelf.objects.filter(active=True)
     serializer_class = TransactionSelfSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
         queryset = self.queryset
-        user = self.request.user
-        if self.action.__eq__('list'):
-            queryset = queryset.filter(user=user)
-            type = self.request.query_params.get('type')
-            if type:
-                queryset = queryset.filter(transaction_type=type)
+        type = self.request.query_params.get('type')
+        if type:
+            queryset = queryset.filter(transaction_category__transaction_type__icontains=type)
         return queryset
 
     @action(methods=['post'], url_path='add', detail=False)
@@ -284,7 +310,6 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = TransactionGroup.objects.filter(active=True)
     serializer_class = TransactionGroupSerializer
@@ -309,7 +334,6 @@ class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.R
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = FreetimeOption.objects.filter(active=True)
     serializer_class = FreetimeOptionSerializer
@@ -320,6 +344,9 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPI
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
     permission_classes = [IsAuthenticated, ]
+
+
+
 
 # class o(viewsets.ViewSet):
 #     @action(methods=['post'], detail=False, url_path='token')
@@ -350,3 +377,6 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPI
 #             return JsonResponse(json.loads(body))
 #         else:
 #             return Response(json.loads(body), status=status_code)
+
+
+

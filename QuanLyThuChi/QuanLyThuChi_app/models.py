@@ -21,8 +21,8 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
 
-    avatar = CloudinaryField('image')
-    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
+    avatar = CloudinaryField('image', blank=True, null=True)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default='user')
 
     def __str__(self):
         return self.username
@@ -54,7 +54,7 @@ class BaseModelTransactionCategory(BaseModel):
         ('expense', 'Expense'),
     )
     name = models.CharField(max_length=50, unique=True)
-    icon = avatar = CloudinaryField('image')
+    icon = CloudinaryField('image', blank=True)
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES, default='Expense')
 
 
@@ -79,7 +79,7 @@ class BaseModelTransaction(BaseModel):
 
     name = models.CharField(max_length=50, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    timestamp = models.DateField(default=date.today())
+    timestamp = models.DateField(date.today)
     description = models.TextField(blank=True, null=True)
 
 

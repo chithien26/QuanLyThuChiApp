@@ -18,12 +18,10 @@ class UserSerializer(ModelSerializer):
 
     def create(self, validated_data):
         data = validated_data.copy()
-
         user = User(**data)
         user.set_password(user.password)
         user.save()
         return user
-
 
 class GroupSerializer(ModelSerializer):
     create_by = UserSerializer()

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     'cloudinary',
+    'cloudinary_storage',
 
 ]
 
@@ -160,19 +161,13 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
-# cloudinary.config(
-#     cloud_name = "chithien26",
-#     api_key = "853533217965125",
-#     api_secret = "Z1nIKQWR1-KUMMznOuMI_P3fUGo",
-# )
+cloudinary.config(
+    cloud_name = "chithien26",
+    api_key = "853533217965125",
+    api_secret = "Z1nIKQWR1-KUMMznOuMI_P3fUGo",
+)
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'chithien26',
-    'API_KEY': '853533217965125',
-    'API_SECRET': 'Z1nIKQWR1-KUMMznOuMI_P3fUGo',
-}
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 import os
 
 LOGGING = {
