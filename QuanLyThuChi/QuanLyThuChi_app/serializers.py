@@ -24,19 +24,19 @@ class UserSerializer(ModelSerializer):
         return user
 
 class GroupSerializer(ModelSerializer):
-    create_by = UserSerializer()
+    create_by = UserSerializer
 
     class Meta:
         model = Group
         fields = ['id', 'name', 'created_date', 'create_by']
 
-    def create(self, validated_data, request):
-        data = validated_data.copy()
-
-        group = Group(**data)
-        group.create_by = request.user
-        group.save()
-        return group
+    # def create(self, validated_data, request):
+    #     data = validated_data.copy()
+    #
+    #     group = Group(**data)
+    #     group.create_by = request.user
+    #     group.save()
+    #     return group
     # def create(self, validated_data):
     #     group = Group(**validated_data)
     #     user = self.context['request'].user

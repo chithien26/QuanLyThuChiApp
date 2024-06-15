@@ -143,10 +143,7 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated, ]
 
-    @action(methods=['get'], url_path='members', detail=True)
-    def get_member_list(self, request, pk):
-        members = GroupMember.objects.filter(group__id=pk)
-        return Response(serializers.GroupMemberSerializer(members, many=True).data, status=status.HTTP_200_OK)
+
 
     @action(methods=['get'], url_path='members', detail=True)
     def get_member_list(self, request, pk):
@@ -159,8 +156,8 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
         user_id = data.get('user_id')
         user = User.objects.get(pk=user_id)
         group = Group.objects.get(pk=pk)
-        # is_leader = False
-        member = self.get_object().groupmember_set.create(user=user, group=group)
+        is_leader = data.get('is leader', False)
+        member = self.get_object().groupmember_set.create(user=user, group=group, is_leader=is_leader)
         return Response(serializers.GroupMemberSerializer(member).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='delete_member', detail=True)
