@@ -4,11 +4,6 @@ import { Button } from "react-native-paper";
 import { MyDispatchContext, MyUserContext } from "../../configs/Contexts";
 import MyStyles from "../../styles/MyStyles";
 import { useNavigation } from '@react-navigation/native';
-import CaNhan from "../QuanLyThuChi/CaNhan";
-import Nhom from "../QuanLyThuChi/Nhom"
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
-
 
 const Profile = () => {
     const user = useContext(MyUserContext);
