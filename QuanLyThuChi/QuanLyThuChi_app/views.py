@@ -1,3 +1,4 @@
+import json
 import os
 
 from django.db import transaction
@@ -8,15 +9,10 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
+from QuanLyThuChi import settings
 from QuanLyThuChi_app import serializers, perm
 from .serializers import *
-import json
-from QuanLyThuChi import settings
-
-
 
 
 # Create your views here.
@@ -26,7 +22,6 @@ def index(request):
     return HttpResponse("trang chu")
 
 
-
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
@@ -34,9 +29,9 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        if self.action in ['list']:
-            return [perm.AdminAuthenticated()]
-        elif self.action in ['register']:
+        # if self.action in ['list']:
+        #     return [perm.AdminAuthenticated()]
+        if self.action in ['register']:
             return [permissions.AllowAny()]
         else:
             return [permissions.IsAuthenticated()]
@@ -56,7 +51,8 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
                     user = serializer.save()
 
                     # Đọc file JSON
-                    file_path = os.path.join(settings.BASE_DIR, 'QuanLyThuChi_App/static/data/default_category_self.json')
+                    file_path = os.path.join(settings.BASE_DIR,
+                                             'QuanLyThuChi_App/static/data/default_category_self.json')
                     with open(file_path, 'r', encoding='utf-8') as file:
                         default_category_self = json.load(file)
 
@@ -65,6 +61,7 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
                         TransactionCategorySelf.objects.create(
                             name=c['name'],
                             transaction_type=c['transaction_type'],
+                            icon=c['icon'],
                             user=user
                         )
                 return Response({'status': 'user created', 'user': UserSerializer(user).data},
@@ -112,53 +109,45 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
         return Response(serializers.TransactionCategorySelfSerializer(transaction_category, many=True).data,
                         status=status.HTTP_200_OK)
 
-    @action(methods=['get'], url_path='transactions', detail=False)
-    def get_transaction_self(self, request):
-        user = request.user
-        transaction = TransactionSelf.objects.filter(Q(active=True) & Q(user=user))
-        type = request.query_params.get('type')
-        if type:
-            transaction = TransactionSelf.objects.filter(Q(user=user) & Q(transaction_category__transaction_type=type))
-        return Response(serializers.TransactionSelfSerializer(transaction, many=True).data,
-                        status=status.HTTP_200_OK)
-
-
-
-    # @action(methods=['get'], url_path='statistics', detail=True)
-    # def statistics(self, request, pk):
-    #     queryset = self.get_object().transactionself_set.filter(active=True)
-    #     # month = self.request.query_params.get('month')
-    #     # date_now = date.today
-    #     # if month:
-    #     #     queryset = queryset.filter(created_date__month=month)
-    #     # else:
-    #     #     month = date_now
-    #     #     queryset = queryset.filter(created_date__month=month)
-    #
-    #     return Response(serializers.TransactionSelfSerializer(queryset).data, status=status.HTTP_200_OK)
-
 
 class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Group.objects.filter(active=True)
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated, ]
 
+    # def create(self, request, *args, **kwargs):
+    #     name = request.data.get('name')
+    #     create_by = request.user
+    #     Group.objects.create(name=name, create_by=create_by)
 
 
     @action(methods=['get'], url_path='members', detail=True)
     def get_member_list(self, request, pk):
-        members = GroupMember.objects.filter(group__id=pk)
-        return Response(serializers.GroupMemberSerializer(members, many=True).data, status=status.HTTP_200_OK)
+        user = request.user
+        member = GroupMember.objects.filter(user=user, group__id=pk)
+        if member.exists():
+            members = GroupMember.objects.filter(group__id=pk)
+            return Response(serializers.GroupMemberSerializer(members, many=True).data, status=status.HTTP_200_OK)
+        return Response({'error': 'Not found group'}, status=status.HTTP_404_NOT_FOUND)
+
 
     @action(methods=['post'], url_name='add_member', detail=True)
     def add_member(self, request, pk):
-        data = request.data
-        user_id = data.get('user_id')
-        user = User.objects.get(pk=user_id)
-        group = Group.objects.get(pk=pk)
-        is_leader = data.get('is leader', False)
-        member = self.get_object().groupmember_set.create(user=user, group=group, is_leader=is_leader)
-        return Response(serializers.GroupMemberSerializer(member).data, status=status.HTTP_201_CREATED)
+        user_add = request.user
+        member = GroupMember.objects.filter(user=user_add, group__id=pk)
+        if member.exists():
+            user_id = request.data.get('user_id')
+            user = User.objects.get(pk=user_id)
+            group = Group.objects.get(pk=pk)
+            user_in_group = GroupMember.objects.filter(user=user, group=group)
+            if user_in_group.exists():
+                return Response({'error': 'User in group'}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                is_leader = request.data.get('is leader', False)
+                member = self.get_object().groupmember_set.create(user=user, group=group, is_leader=is_leader)
+                return Response(serializers.GroupMemberSerializer(member).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Not found group'}, status=status.HTTP_404_NOT_FOUND)
 
     @action(methods=['post'], url_path='delete_member', detail=True)
     def delete_member(self, request, pk):
@@ -221,6 +210,23 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
                                             user=user, group=group)
         return Response(serializers.TransactionSelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
+    @action(methods=['post'], url_path='create_survey', detail=True)
+    def create_survey(self, request, pk):
+        name = request.data.get('name')
+        user = request.user
+        group = Group.objects.get(id=pk)
+        is_member = GroupMember.objects.filter(Q(group=group) & Q(user=user)).exists()
+        if is_member:
+            creator = user
+
+        else:
+            return Response({'error': 'Not a mem'}, status=status.HTTP_400_BAD_REQUEST)
+        if not name:
+            return Response({'error': 'Not found name'}, status=status.HTTP_400_BAD_REQUEST)
+
+        s = Survey.objects.create(name=name, creator=creator, group=group)
+        return Response(serializers.SurveySerializer(s).data, status=status.HTTP_201_CREATED)
+
 
 class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = GroupMember.objects.filter(active=True)
@@ -228,7 +234,8 @@ class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.List
     permission_classes = [IsAuthenticated, ]
 
 
-class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
+class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
+                                     generics.DestroyAPIView):
     queryset = TransactionCategorySelf.objects.filter(active=True)
     serializer_class = TransactionCategorySelfSerializer
     permission_classes = [perm.OwnerAuthenticated]
@@ -240,20 +247,8 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
             queryset = queryset.filter(user=user)
             type = self.request.query_params.get('type')
             if type:
-                queryset = queryset.filter(transaction_type=type)
+                queryset = queryset.filter(transaction_type__icontains=type)
         return queryset
-
-    @action(methods=['put'], url_path='update', detail=True)
-    def update_category(self, request, pk):
-        try:
-            transaction_category = TransactionCategorySelf.objects.get(pk=pk)
-        except TransactionCategorySelf.DoesNotExist:
-            return Response({"error": "Transaction category self not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = TransactionCategorySelfSerializer(transaction_category, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['post'], url_path='add', detail=False)
     def add_transaction_category(self, request):
@@ -268,8 +263,21 @@ class TransactionCategorySelfViewSet(viewsets.ViewSet, generics.ListAPIView, gen
         tc = TransactionCategorySelf.objects.create(name=name, icon=icon, transaction_type=transaction_type, user=user)
         return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
 
+    @action(methods=['put'], url_path='update', detail=True)
+    def update_category(self, request, pk):
+        try:
+            transaction_category = TransactionCategorySelf.objects.get(pk=pk)
+        except TransactionCategorySelf.DoesNotExist:
+            return Response({"error": "Transaction category self not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TransactionCategorySelfSerializer(transaction_category, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
+
+class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
+                                      generics.DestroyAPIView):
     queryset = TransactionCategoryGroup.objects.filter(active=True)
     serializer_class = TransactionCategoryGroupSerializer
     permission_classes = [perm.OwnerAuthenticated]
@@ -278,7 +286,7 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
         queryset = self.queryset
         type = self.request.query_params.get('type')
         if type:
-            queryset = queryset.filter(transaction_type__icontains=type)
+            queryset = queryset.filter(transaction_type=type)
         return queryset
 
     @action(methods=['put'], url_path='update', detail=True)
@@ -310,10 +318,17 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
         queryset = self.queryset
         user = self.request.user
         if self.action.__eq__('list'):
-            queryset = queryset.filter(user=user)
+            queryset = queryset.filter(user=user).order_by('timestamp')
             type = self.request.query_params.get('type')
+            month = self.request.query_params.get('month')
+            year = self.request.query_params.get('year')
             if type:
-                queryset = queryset.filter(transaction_type=type)
+                queryset = queryset.filter(transaction_category__transaction_type__icontains=type)
+            if month:
+                queryset = queryset.filter(timestamp__month=month)
+            if year:
+                queryset = queryset.filter(timestamp__year=year)
+
         return queryset
 
     @action(methods=['post'], url_path='add', detail=False)
@@ -322,16 +337,17 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
         name = data.get('name')
         amount = data.get('amount')
         timestamp = data.get('timestamp')
-        transaction_category = data.get('transaction_category')
+        id = data.get('transaction_category_id')
+        transaction_category = TransactionCategorySelf.objects.get(id=id)
         user = request.user
         if not name or not transaction_category:
             return Response({'error': 'Name and transaction_type are required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        tc = TransactionSelf.objects.create(name=name, amount=amount, timestamp=timestamp,
-                                            transaction_category=transaction_category,
-                                            user=user)
-        return Response(serializers.TransactionSelfSerializer(tc).data, status=status.HTTP_201_CREATED)
+        t = TransactionSelf.objects.create(name=name, amount=amount, timestamp=timestamp,
+                                           transaction_category=transaction_category,
+                                           user=user)
+        return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['put'], url_path='update', detail=True)
     def update_transaction(self, request, pk):
@@ -346,16 +362,24 @@ class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Re
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
+class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
+                              generics.DestroyAPIView):
     queryset = TransactionGroup.objects.filter(active=True)
     serializer_class = TransactionGroupSerializer
     permission_classes = [perm.OwnerAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
+        queryset=queryset.order_by('timestamp')
         type = self.request.query_params.get('type')
+        month = self.request.query_params.get('month')
+        year = self.request.query_params.get('year')
         if type:
             queryset = queryset.filter(transaction_category__transaction_type__icontains=type)
+        if month:
+            queryset = queryset.filter(timestamp__month=month)
+        if year:
+            queryset = queryset.filter(timestamp__year=year)
         return queryset
 
     @action(methods=['put'], url_path='update', detail=True)
@@ -377,13 +401,7 @@ class FreetimeOptionViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Ret
     permission_classes = [IsAuthenticated, ]
 
 
-
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Survey.objects.filter(active=True)
     serializer_class = SurveySerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
-
-
-

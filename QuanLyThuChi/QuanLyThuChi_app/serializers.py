@@ -23,30 +23,13 @@ class UserSerializer(ModelSerializer):
         user.save()
         return user
 
+
 class GroupSerializer(ModelSerializer):
     create_by = UserSerializer
 
     class Meta:
         model = Group
         fields = ['id', 'name', 'created_date', 'create_by']
-
-    # def create(self, validated_data, request):
-    #     data = validated_data.copy()
-    #
-    #     group = Group(**data)
-    #     group.create_by = request.user
-    #     group.save()
-    #     return group
-    # def create(self, validated_data):
-    #     group = Group(**validated_data)
-    #     user = self.context['request'].user
-    #     if group.create_by == user.pk:
-    #         GroupMember.objects.create(group=group, user=user, is_leader=True)
-    #     else:
-    #         GroupMember.objects.create(group=group, user=user, is_leader=False)
-    #     group.save()
-    #
-    #     return group
 
 
 class GroupMemberSerializer(ModelSerializer):
@@ -59,6 +42,7 @@ class TransactionCategorySelfSerializer(ModelSerializer):
     class Meta:
         model = TransactionCategorySelf
         fields = ['id', 'name', 'transaction_type', 'created_date', 'user']
+
         # extra_kwargs = {
         #     'user': {
         #         'write_only': True
@@ -98,7 +82,8 @@ class TransactionSelfSerializer(ModelSerializer):
 class TransactionGroupSerializer(ModelSerializer):
     class Meta:
         model = TransactionGroup
-        fields = ['id', 'name', 'amount', 'timestamp', 'description', 'created_date', 'transaction_category', 'group', 'user', 'accept']
+        fields = ['id', 'name', 'amount', 'timestamp', 'description', 'created_date', 'transaction_category', 'group',
+                  'user', 'accept']
         # extra_kwargs = {
         #     'group': {
         #         'write_only': True

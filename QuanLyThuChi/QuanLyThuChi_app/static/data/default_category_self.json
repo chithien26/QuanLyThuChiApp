@@ -1,22 +1,27 @@
 [
   {
     "name": "Ăn uống",
-    "transaction_type": "expense"
+    "transaction_type": "expense",
+    "icon": "https://img.icons8.com/?size=100&id=57193&format=png&color=000000"
   },
   {
     "name": "Mua sắm",
-    "transaction_type": "expense"
+    "transaction_type": "expense",
+    "icon": "https://img.icons8.com/?size=100&id=ySRi3OLgoOJX&format=png&color=000000"
   },
   {
-    "name": "Đi chơi",
-    "transaction_type": "expense"
+    "name": "game",
+    "transaction_type": "expense",
+    "icon": "https://img.icons8.com/?size=100&id=gp2EGUQ15At9&format=png&color=000000"
   },
   {
     "name": "Tiền lương",
-    "transaction_type": "income"
+    "transaction_type": "income",
+    "icon": "https://img.icons8.com/?size=100&id=mRt0HH1Y8J9y&format=png&color=000000"
   },
   {
     "name": "Tiền thưởng",
-    "transaction_type": "income"
+    "transaction_type": "income",
+    "icon": "https://img.icons8.com/?size=100&id=7Q33A458BSsj&format=png&color=000000"
   }
 ]

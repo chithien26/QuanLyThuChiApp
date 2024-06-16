@@ -7,3 +7,4 @@ class OwnerAuthenticated(permissions.IsAuthenticated):
 class AdminAuthenticated(permissions.IsAuthenticated):
     def has_permission(self, request, view):
         return request.user.account_type == 'admin'
+
