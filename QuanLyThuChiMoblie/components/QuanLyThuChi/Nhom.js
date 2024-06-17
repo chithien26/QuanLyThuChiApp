@@ -13,7 +13,6 @@ const Nhom =()=>{
     
     const currentuser = useContext(MyUserContext);
     const [showSearch, setShowSearch] = useState(false);
-    
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [users, setUsers] = useState([]);
@@ -22,9 +21,13 @@ const Nhom =()=>{
     const [showDialog, setShowDialog] = useState(false); // State để hiển thị dialog
     const [groupName, setGroupName] = useState('');
     const [group, setGroup]= useState([]);
-    
+   
     const addLeaderToGroup = async (groupId, token,leaderId) => {     
-          try {           
+          try {  
+            if (!currentuser) {
+              console.error('currentuser is null or undefined');
+              return;
+            }         
             const response = await authApi(token).post(
               endpoints['addUserToGroup'](groupId),
               { user_id: leaderId,
@@ -47,7 +50,7 @@ const Nhom =()=>{
     const addUserToGroup = async (groupId, userIds,token) => {
       for (const userId of userIds) {
           try {
-          
+            
             const response = await authApi(token).post(
               endpoints['addUserToGroup'](groupId),
               { 
@@ -70,10 +73,14 @@ const Nhom =()=>{
   const hienThiDanhSachNhom = async () => {
     setLoading(true);
     try {
+        if (!currentuser) {
+          console.error('currentuser is null or undefined');
+          return;
+        } 
         const token = await AsyncStorage.getItem('token');
         console.log(token) ;
         const response = await authApi(token).get(endpoints['groups']);                       
-        
+        console.log(response.data)
         
         if(response.status===200) {
           const groups = response.data;
@@ -102,7 +109,7 @@ const Nhom =()=>{
           
         }          
     } catch (error) {           
-        console.error("Lỗi !!!!", error);
+        console.error("Lỗi !!!", error);
     }  
     setLoading(false);
 };
@@ -116,12 +123,11 @@ const Nhom =()=>{
                 const token = await AsyncStorage.getItem('token');
                 console.log(token) ;
                 const response = await authApi(token).get(endpoints['users']);
-                           
+                console.log(response.data);          
                 setUsers(response.data);
                 setfilterUsers(response.data);
-            } catch (error) {
-                
-                console.error("Lỗi !!!!", error);
+            } catch (error) {                
+                console.error("Lỗi hien thi User", error);
             }  
             setLoading(false);
         };
@@ -151,6 +157,10 @@ const Nhom =()=>{
   const CreateGroupDialog= async () =>{
     setLoading(true);
     try {
+        if (!currentuser) {
+          console.error('currentuser is null or undefined');
+          return;
+        }
         const token = await AsyncStorage.getItem('token');
         console.log(token) ;
         console.log(groupName) ;
@@ -186,10 +196,7 @@ const Nhom =()=>{
                   
                 } else {
                   console.log(`Không tìm thấy nhóm có tên "${groupName}".`);
-                }
-                          
-          
-            
+                }                       
           } else {
             Alert.alert('Tạo nhóm thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
           }  
@@ -249,8 +256,8 @@ const Nhom =()=>{
                                           status={selectedUsers.includes(user.id) ? 'checked' : 'unchecked'}
                                           onPress={() => DanhSachUserSelection(user.id)}
                                       />
-                                    <Image style={Styles.avatar} source={{uri:user.avatar}}/>
-                                     <View style={{ flexDirection: 'column' }}>
+                                    <Image style={Styles.avatar} source={{uri: `https://res.cloudinary.com/chithien26/`+user.avatar}}/>
+                                     <View style={Styles.Column}>
                                             <Text  style={Styles.boldText}>{user.last_name} {user.first_name}</Text>
                                             <Text>{user.username}</Text>
                                             

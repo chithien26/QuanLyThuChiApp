@@ -60,7 +60,7 @@ const Login =() => {
                 })
             }, 1000);
             if (res.status === 200) {                
-                Alert.alert('Đăng nhập thành công', 'Chào mừng bạn quay lại');
+                // Alert.alert('Đăng nhập thành công', 'Chào mừng bạn quay lại');
                 // Lưu token hoặc chuyển hướng sang trang khác tại đây
                 navigation.navigate('MyTab');
             } else {
