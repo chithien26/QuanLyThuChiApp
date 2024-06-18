@@ -11,10 +11,13 @@ const CaNhanDetail = () => {
     const [filterTransaction, setFilterTransaction]= useState('')
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
+    const [loading1, setLoading1] = useState(false);
     const Search = (query) => {
+        setLoading1(true);
         setSearchQuery(query);
         if (query.trim() === '') {
             setFilterTransaction(transactions);
+            setLoading1(false);
         } else {
             const timkiem = transactions.filter(trans => {
                 if (trans.name && typeof trans.name === 'string') {
@@ -50,11 +53,12 @@ const CaNhanDetail = () => {
                     placeholderTextColor="#888888" // Màu chữ của placeholder
                 />
             </View>
+            {!loading1 && (
              <ScrollView  >                        
                         {loading && <ActivityIndicator/>}
                         <View >
                         { transactions !==null &&
-                         filterTransaction.slice().sort((a, b) => b.id - a.id).map((transaction) => (
+                         transactions.slice().sort((a, b) => b.id - a.id).map((transaction) => (
 
                                     <View key={transaction.id} style={Style.transactionRow}>
                                         <TouchableOpacity style={Style.transactionContainer} >
@@ -85,7 +89,44 @@ const CaNhanDetail = () => {
                         </View>
                         {loading && page > 1 && <ActivityIndicator/>}            
                     </ScrollView>  
-                                   
+                     ) } 
+                     {loading1 && (
+                        <ScrollView  >                        
+                                    {loading && <ActivityIndicator/>}
+                                    <View >
+                                    { filterTransaction !==null &&
+                                    filterTransaction.slice().sort((a, b) => b.id - a.id).map((transaction) => (
+
+                                                <View key={transaction.id} style={Style.transactionRow}>
+                                                    <TouchableOpacity style={Style.transactionContainer} >
+                                                        <View style={Style.transactionContent}>
+                                                            {/* Tên giao dịch */}
+                                                            <Text style={Style.transactionName}>{transaction.name}</Text>
+
+                                                            {/* Số tiền */}
+                                                            <View style={Style.detailContainer}>
+                                                                <Text style={Style.detailLabel}>Số tiền:</Text>
+                                                                <Text style={Style.detailText}>{formatAmount(transaction.amount)} đ</Text>
+                                                            </View>
+
+                                                            {/* Mô tả */}
+                                                            <View style={Style.detailContainer}>
+                                                                <Text style={Style.detailLabel}>Mô tả:</Text>
+                                                                <Text style={Style.detailText}>{transaction.description}</Text>
+                                                            </View>
+                                                        </View>
+                                                        
+                                                        {/* Thời gian */}
+                                                        <Text style={Style.timestamp}>{formatDate(transaction.timestamp)}</Text>
+                                                    </TouchableOpacity>
+                                                        
+                                                    
+                                                </View>
+                                            ))}
+                                    </View>
+                                    {loading && page > 1 && <ActivityIndicator/>}            
+                                </ScrollView>  
+                                ) }             
         </View>
     );
 };

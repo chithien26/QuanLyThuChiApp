@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import APIs, { authApi, endpoints } from '../../configs/APIs';
 import CaNhanStyle from "../../styles/CaNhanStyle";
 import { isCloseToBottom  } from "../Utils/Utils";
+
 const CaNhan = ({}) => {
     const user = useContext(MyUserContext);
     const dispatch = useContext(MyDispatchContext);
@@ -75,7 +76,7 @@ const CaNhan = ({}) => {
                     'Content-Type': 'application/json',
                   },
             });
-            if (response.status ===200){
+            if (response.status ===201){
                 Alert.alert('Thêm khoản chi thành công');
                        
             }      

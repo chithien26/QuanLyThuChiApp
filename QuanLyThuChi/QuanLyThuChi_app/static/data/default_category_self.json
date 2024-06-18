@@ -1,22 +1,61 @@
 [
   {
     "name": "Ăn uống",
-    "transaction_type": "expense"
+    "transaction_type": "expense",
+    "icon": "glass-fragile"
   },
   {
     "name": "Mua sắm",
-    "transaction_type": "expense"
-  },
-  {
-    "name": "Đi chơi",
-    "transaction_type": "expense"
+    "transaction_type": "expense",
+    "icon": "cart-minus"
   },
   {
     "name": "Tiền lương",
-    "transaction_type": "income"
+    "transaction_type": "income",
+    "icon": "cash-100"
+  },
+  {
+    "name": "Tiền phụ cấp",
+    "transaction_type": "income",
+    "icon": "cash-plus"
+  },
+  {
+    "name": "Đầu tư",
+    "transaction_type": "income",
+    "icon": "database-settings"
+  },
+  {
+    "name": "Bán đồ",
+    "transaction_type": "income",
+    "icon": "cart-minus"
   },
   {
     "name": "Tiền thưởng",
-    "transaction_type": "income"
+    "transaction_type": "income",
+    "icon": "gift"
+  },{
+    "name": "Tiền điện",
+    "transaction_type": "expense",
+    "icon": "lightbulb-on-outline"
+  },{
+    "name": "Tiền nhà",
+    "transaction_type": "expense",
+   "icon": "home"
+  },{
+    "name": "Giáo dục",
+    "transaction_type": "expense",
+    "icon": "school"
+  },{
+    "name": "Đi lại",
+    "transaction_type": "expense",
+    "icon": "bus-multiple"
+  },{
+    "name": "Y tế",
+    "transaction_type": "expense",
+   "icon": "hospital-box"
+  },{
+    "name": "Wifi",
+    "transaction_type": "expense",
+   "icon": "wifi"
   }
 ]
