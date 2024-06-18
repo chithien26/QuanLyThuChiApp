@@ -1,6 +1,10 @@
 import axios from "axios";
 
+<<<<<<< HEAD
 const BASE_URL = 'http://172.168.10.62:8000/';
+=======
+const BASE_URL = 'http://192.168.1.87:8000/';
+>>>>>>> eef634d1fbb10ef0cec3c5e907fa22f74fc36ebc
 
 export const endpoints = {
     'login': '/o/token/',

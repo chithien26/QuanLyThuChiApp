@@ -145,13 +145,13 @@ const   AddThuChiGroup = ({}) => {
        
     };
     return (
-        <View style={AddThuChiGroupStyle.container}>
+        <View style={CaNhanStyle.container}>
             
         <View style={AddThuChiGroupStyle.type}>
             <Button  icon={() => <IconButton icon='arrow-left' color='#000' size={30} />}
                  mode='contained'
                  onPress={() => navigation.goBack()}
-                 style={[AddThuChiGroupStyle.buttonType, AddThuChiGroupStyle.buttonGoBack]}>
+                 style={AddThuChiGroupStyle.buttonGoBack}>
                </Button>
             <Button
                 style={[AddThuChiGroupStyle.buttonType, showChi ? AddThuChiGroupStyle.ButtonSelect : null]}

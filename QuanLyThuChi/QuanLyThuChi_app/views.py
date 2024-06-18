@@ -12,6 +12,7 @@ from rest_framework.response import Response
 
 from QuanLyThuChi import settings
 from QuanLyThuChi_app import serializers, perm
+from .paginators import TransactionCategoryGroupPagination
 from .serializers import *
 
 
@@ -95,31 +96,41 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIVi
 
         return Response(serializers.UserSerializer(user).data)
 
-    @action(methods=['get'], url_path='groups', detail=False)
-    def groups(self, request):
-        user = request.user
-        groups = Group.objects.filter(groupmember__user=user)
-        serializer = GroupSerializer(groups, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-        transaction_category = TransactionCategorySelf.objects.filter(Q(user=user) & Q(active=True))
-        type = request.query_params.get('type')
-        if type:
-            transaction_category = TransactionCategorySelf.objects.filter(Q(user=user) & Q(transaction_type=type))
-
-        return Response(serializers.TransactionCategorySelfSerializer(transaction_category, many=True).data,
-                        status=status.HTTP_200_OK)
-
 
 class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = Group.objects.filter(active=True)
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated, ]
 
-    # def create(self, request, *args, **kwargs):
-    #     name = request.data.get('name')
-    #     create_by = request.user
-    #     Group.objects.create(name=name, create_by=create_by)
+    def get_queryset(self):
+        queryset = self.queryset
+        user = self.request.user
+        if self.action.__eq__('list'):
+            queryset = queryset.filter(groupmember__user=user)
 
+        return queryset
+
+    @action(methods=['post'], url_path='create', detail=False)
+    def create_group(self, request):
+        create_by = request.user
+        name = request.data.get('name')
+        group = Group.objects.create(name=name, create_by=create_by)
+        GroupMember.objects.create(user=create_by, group=group, is_leader=True)
+        # Đọc file JSON
+        file_path = os.path.join(settings.BASE_DIR,
+                                 'QuanLyThuChi_App/static/data/default_category_self.json')
+        with open(file_path, 'r', encoding='utf-8') as file:
+            default_category_self = json.load(file)
+
+        # Tạo danh mục có sẵn cho group
+        for c in default_category_self:
+            TransactionCategoryGroup.objects.create(
+                name=c['name'],
+                transaction_type=c['transaction_type'],
+                icon=c['icon'],
+                group=group
+            )
+        return Response(serializers.GroupSerializer(group).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['get'], url_path='members', detail=True)
     def get_member_list(self, request, pk):
@@ -129,7 +140,6 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
             members = GroupMember.objects.filter(group__id=pk)
             return Response(serializers.GroupMemberSerializer(members, many=True).data, status=status.HTTP_200_OK)
         return Response({'error': 'Not found group'}, status=status.HTTP_404_NOT_FOUND)
-
 
     @action(methods=['post'], url_name='add_member', detail=True)
     def add_member(self, request, pk):
@@ -165,9 +175,12 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
         type = request.query_params.get('type')
         if type:
             transaction_category = TransactionCategoryGroup.objects.filter(Q(group__id=pk) & Q(transaction_type=type))
-
-        return Response(serializers.TransactionCategoryGroupSerializer(transaction_category, many=True).data,
-                        status=status.HTTP_200_OK)
+        paginator = TransactionCategoryGroupPagination()
+        result_page = paginator.paginate_queryset(transaction_category, request)
+        serializer = serializers.TransactionCategoryGroupSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+        # return Response(serializers.TransactionCategoryGroupSerializer(transaction_category, many=True).data,
+        #                 status=status.HTTP_200_OK)
 
     @action(methods=['get'], url_path='transaction', detail=True)
     def get_transaction_group(self, request, pk):
@@ -179,36 +192,37 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
         return Response(serializers.TransactionGroupSerializer(transaction, many=True).data,
                         status=status.HTTP_200_OK)
 
-    @action(methods=['post'], url_path='add_transaction_category', detail=True)
-    def add_transaction_category(self, request, pk):
+    @action(methods=['post'], url_path='add_category', detail=True)
+    def add_category(self, request, pk):
         name = request.data.get('name')
         icon = request.data.get('icon')
         transaction_type = request.data.get('transaction_type')
-        group = self.get_object()
+        group = Group.objects.get(id=pk)
         if not name or not transaction_type:
             return Response({'error': 'Name and transaction_type are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        tc = TransactionCategoryGroup.objects.create(name=name, icon=icon, transaction_type=transaction_type,
+                                                     group=group)
+        return Response(serializers.TransactionCategoryGroupSerializer(tc).data, status=status.HTTP_201_CREATED)
 
-        tc = TransactionCategorySelf.objects.create(name=name, icon=icon, transaction_type=transaction_type,
-                                                    group=group)
-        return Response(serializers.TransactionCategorySelfSerializer(tc).data, status=status.HTTP_201_CREATED)
-
-    @action(methods=['post'], url_path='add_transaction', detail=False)
-    def add_transaction(self, request):
+    @action(methods=['post'], url_path='add_transaction', detail=True)
+    def add_transaction(self, request, pk):
         data = request.data
         name = data.get('name')
         amount = data.get('amount')
         timestamp = data.get('timestamp')
-        transaction_category = data.get('transaction_category')
+        description = data.get('description')
+        id = data.get('transaction_category_id')
+        transaction_category = TransactionCategoryGroup.objects.get(id=id)
         user = request.user
-        group = self.get_object()
+        group = Group.objects.get(id=pk)
         if not name or not transaction_category:
             return Response({'error': 'Name and transaction_type are required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        tc = TransactionSelf.objects.create(name=name, amount=amount, timestamp=timestamp,
-                                            transaction_category=transaction_category,
-                                            user=user, group=group)
-        return Response(serializers.TransactionSelfSerializer(tc).data, status=status.HTTP_201_CREATED)
+        t = TransactionGroup.objects.create(name=name, amount=amount, timestamp=timestamp,
+                                           transaction_category=transaction_category, description=description,
+                                           user=user, group=group)
+        return Response(serializers.TransactionGroupSerializer(t).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='create_survey', detail=True)
     def create_survey(self, request, pk):
@@ -220,7 +234,7 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
             creator = user
 
         else:
-            return Response({'error': 'Not a mem'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Not a member'}, status=status.HTTP_400_BAD_REQUEST)
         if not name:
             return Response({'error': 'Not found name'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -293,20 +307,15 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
     def update_category(self, request, pk):
         try:
             transaction_category = TransactionCategoryGroup.objects.get(pk=pk)
-        except TransactionCategorySelf.DoesNotExist:
+        except TransactionCategoryGroup.DoesNotExist:
             return Response({"error": "Transaction category group not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = TransactionCategoryGroupSerializer(transaction_category, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # @action(methods=['post'], url_path='add_transaction', detail=True)
-    # def add_transaction(self, request, pk):
-    #     t = self.get_object().transactionself_set.create(name=request.data.get('name'),
-    #                                                      amount=request.data.get('amount'),
-    #                                                      description=request.data.get('description'),
-    #                                                      transaction_category=request.data.get('transaction_category'))
-    #     return Response(serializers.TransactionSelfSerializer(t).data, status=status.HTTP_201_CREATED)
+
+
 
 
 class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
@@ -370,7 +379,7 @@ class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.R
 
     def get_queryset(self):
         queryset = self.queryset
-        queryset=queryset.order_by('timestamp')
+        queryset = queryset.order_by('timestamp')
         type = self.request.query_params.get('type')
         month = self.request.query_params.get('month')
         year = self.request.query_params.get('year')

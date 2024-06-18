@@ -41,7 +41,7 @@ class GroupMemberSerializer(ModelSerializer):
 class TransactionCategorySelfSerializer(ModelSerializer):
     class Meta:
         model = TransactionCategorySelf
-        fields = ['id', 'name', 'transaction_type', 'created_date', 'user']
+        fields = ['id', 'name', 'transaction_type', 'created_date','icon', 'user']
 
         # extra_kwargs = {
         #     'user': {
@@ -58,7 +58,7 @@ class TransactionCategorySelfSerializer(ModelSerializer):
 class TransactionCategoryGroupSerializer(ModelSerializer):
     class Meta:
         model = TransactionCategoryGroup
-        fields = ['id', 'name', 'transaction_type', 'created_date', 'group']
+        fields = ['id', 'name', 'transaction_type', 'created_date', 'icon', 'group']
 
     # extra_kwargs = {
     #     'group': {
