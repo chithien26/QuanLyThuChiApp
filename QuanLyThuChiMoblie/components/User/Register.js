@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import Style from './Style';
 import MyStyles from '../../styles/MyStyles';
+import RegisterStyle from '../../styles/RegisterStyle';
 
 const Register = () => {
   const [user, setUser] = useState({account_type: 'user'});
@@ -110,11 +111,13 @@ const Register = () => {
     
 
   return (
-    <View style={MyStyles.container}>
+    <View style={RegisterStyle.container}>
       <KeyboardAvoidingView behavior={Platform.OS ==='ios' ? 'padding' : 'height'}>
         <ScrollView>
-        <Text style={MyStyles.subject}>Đăng kí người dùng</Text>
-          {fields.map(f=> <TextInput style={MyStyles.margin} key={f.field} label={f.label} onChangeText={t => updateSate(f.field,t)} secureTextEntry= {f.secureTextEntry} right={<TextInput.Icon icon={f.icon} />} />)}
+        <Text style={RegisterStyle.title}>Đăng kí</Text>
+        <View style={RegisterStyle.input}>
+          {fields.map(f=> <TextInput style={RegisterStyle.inputElement} key={f.field} label={f.label} onChangeText={t => updateSate(f.field,t)} secureTextEntry= {f.secureTextEntry} right={<TextInput.Icon icon={f.icon} />} />)}
+        </View>
         <TouchableRipple style={Style.button} onPress={picker}>
           <Text style={Style.buttonText}>Chọn ảnh đại diện</Text>
         </TouchableRipple>

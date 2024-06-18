@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text,  Alert } from "react-native";
+import { View, Text,  Alert, Image } from "react-native";
 import { Button,  TextInput  } from "react-native-paper";
 import MyStyles from "../../styles/MyStyles";
 import Style from "./Style";
@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CLIENT_ID, CLIENT_SECRET } from '@env';
 import { MyDispatchContext } from '../../configs/Contexts';
+import LoginStyle from '../../styles/LoginStyle';
 
 const Login =() => {
     const dispatch =useContext(MyDispatchContext);
@@ -80,12 +81,19 @@ const Login =() => {
 
     return (
         
-            <View style={[MyStyles.container, MyStyles.margin]}>
-                <Text style={MyStyles.subject}>ĐĂNG NHẬP NGƯỜI DÙNG</Text>
-                {fields.map(c => <TextInput secureTextEntry={c.secureTextEntry} value={user[c.name]} onChangeText={t => updateSate(c.name, t)} style={MyStyles.margin} key={c.name} label={c.label} right={<TextInput.Icon icon={c.icon} />} />)}
-                <Button icon="account" loading={loading} mode="contained" onPress={DangNhapClick}>ĐĂNG NHẬP</Button>
-                 <Button style={MyStyles.margin} icon="account" loading={loading} mode="contained" onPress={DangKiClick}>ĐĂNG KÍ</Button>
+        <View style={LoginStyle.container}>
+            <View>
+            <Image style={LoginStyle.logo} source={{uri: 'https://img2.gratispng.com/20180320/cbw/kisspng-computer-icons-payment-income-finance-size-salary-icon-5ab0ff64d51e22.7800877615215491568729.jpg'}}/>
             </View>
+            <Text style={LoginStyle.title}>ĐĂNG NHẬP NGƯỜI DÙNG</Text>
+            <View style={[LoginStyle.input]}>
+                {fields.map(c => <TextInput style={LoginStyle.inputElement} secureTextEntry={c.secureTextEntry} value={user[c.name]} onChangeText={t => updateSate(c.name, t)} key={c.name} label={c.label} right={<TextInput.Icon icon={c.icon} />} />)}
+            </View>
+            <View style={Style.button}>
+                <Button style={LoginStyle.buttonElement}  icon="account" loading={loading} mode="contained" onPress={DangNhapClick}>ĐĂNG NHẬP</Button>
+                <Button style={LoginStyle.buttonElement} icon="account" loading={loading} mode="contained" onPress={DangKiClick}>ĐĂNG kÝ</Button>
+            </View>
+    </View>
        
     );
 };
