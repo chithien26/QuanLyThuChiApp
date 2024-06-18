@@ -46,9 +46,10 @@ export default StyleSheet.create({
     margin: 7,
   },margin:{
     marginTop:20,
+    flex: 1,
   },
   Column: {
-    width:150,
+    width:135,
     flexDirection: 'column',  // Sắp xếp các phần tử theo cột
     justifyContent: 'center', // Căn giữa theo chiều dọc
     alignItems: 'center', // Căn giữa theo chiều ngang
@@ -73,7 +74,7 @@ export default StyleSheet.create({
     
   },
   transactionRow: {
-    padding: 10,
+    padding: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     marginVertical: 5,
@@ -90,7 +91,7 @@ export default StyleSheet.create({
   },
   transactionContainer: {
     backgroundColor: '#f0f0f0',
-    padding: 16,
+    padding: 5,
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
@@ -100,7 +101,7 @@ transactionContent: {
     marginBottom: 8,
 },
 transactionName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
 },
@@ -113,13 +114,11 @@ detailLabel: {
     fontWeight: 'bold',
     marginRight: 4,
 },
-detailText: {
-    flex: 1,
-},
 timestamp: {
+ 
     color: '#666',
     fontSize: 12,
-    marginTop: 8,
+    marginTop: 4,
 },
 
   

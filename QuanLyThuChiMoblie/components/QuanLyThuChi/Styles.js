@@ -25,7 +25,8 @@ export default StyleSheet.create({
     },
     buttonLabel: {
         fontSize: 16,
-    },searchSection: {
+    },
+    searchSection: {
         marginTop: 20,
         flex:1,
     },
@@ -48,13 +49,17 @@ export default StyleSheet.create({
         height:60,
         borderRadius:20,
         
-    },boldText: {
+    },
+    boldText: {
         fontWeight: 'bold',
-    },headerContainer: {
+    },
+    headerContainer: {
         margin: 10,
-    },fontSize:{
+    },
+    fontSize:{
         fontSize: 16,
-    },scrollView: {
+    },
+    scrollView: {
         flex: 1,
         padding: 10,
     },
@@ -105,14 +110,17 @@ export default StyleSheet.create({
         flexDirection: 'row',       
         alignItems: 'center',        
         padding:5,
-    }, fontSizeView:{
+    }, 
+    fontSizeView:{
         fontSize:20,
-    }, touChable:{
+    }, 
+    touChable:{
         backgroundColor:'#C0C0C0',
         flex: 1,
         alignItems: 'center',    
         padding:5,
-    },  modalContainer: {
+    },  
+    modalContainer: {
         backgroundColor: "white",
         padding: 20,
         margin: 50,

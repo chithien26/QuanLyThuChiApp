@@ -1,6 +1,6 @@
 import React, {useState, useContext, useEffect} from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View,  ActivityIndicator, FlatList, ScrollView, Image, Alert, TouchableOpacity} from "react-native";
+import { View,  ActivityIndicator, FlatList, ScrollView, Image, Alert, TouchableOpacity, RefreshControl } from "react-native";
 import MyStyles from '../../styles/MyStyles';
 import { Button, Text, TextInput, Checkbox, List, IconButton } from "react-native-paper";
 import Styles from './Styles';
@@ -8,9 +8,11 @@ import APIs, { authApi, endpoints } from '../../configs/APIs';
 import { MyUserContext } from '../../configs/Contexts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Dialog from "react-native-dialog"; 
+import { isCloseToBottom } from "../Utils/Utils";
+import { useNavigation } from '@react-navigation/native';
 
 const Nhom =()=>{
-    
+    const navigation = useNavigation();
     const currentuser = useContext(MyUserContext);
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +23,28 @@ const Nhom =()=>{
     const [showDialog, setShowDialog] = useState(false); // State để hiển thị dialog
     const [groupName, setGroupName] = useState('');
     const [group, setGroup]= useState([]);
-   
+    const [pageU, setPageU]= useState(1);
+    const [pageG, setPageG]= useState(1);
+    const [id, setId]=useState("");
+    const onPressGroup = (group) => {
+      navigation.navigate('GroupDetail', { group });
+  };
+    const Refesh=()=>{ 
+      setPageG(1);     
+      hienThiDanhSachNhom(); 
+  }
+    const loadMoreU = ({nativeEvent}) => {
+      if (loading===false && isCloseToBottom(nativeEvent) && pageU !==0) {
+          setPageU(pageU + 1);
+          console.log(pageU)
+      }
+    }
+    const loadMoreG = ({nativeEvent}) => {
+      if (loading===false && isCloseToBottom(nativeEvent) && pageG !==0) {
+          setPageG(pageG + 1);
+          console.log(pageG)
+      }
+    }
     const addLeaderToGroup = async (groupId, token,leaderId) => {     
           try {  
             if (!currentuser) {
@@ -49,8 +72,7 @@ const Nhom =()=>{
   
     const addUserToGroup = async (groupId, userIds,token) => {
       for (const userId of userIds) {
-          try {
-            
+          try {     
             const response = await authApi(token).post(
               endpoints['addUserToGroup'](groupId),
               { 
@@ -71,68 +93,69 @@ const Nhom =()=>{
       }
   };
   const hienThiDanhSachNhom = async () => {
-    setLoading(true);
-    try {
-        if (!currentuser) {
-          console.error('currentuser is null or undefined');
-          return;
-        } 
-        const token = await AsyncStorage.getItem('token');
-        console.log(token) ;
-        const response = await authApi(token).get(endpoints['groups']);                       
-        console.log(response.data)
-        
-        if(response.status===200) {
-          const groups = response.data;
-          const groupsUserIn = [];
-        
-          for (const group of groups) {
-            const groupId = group.id;
-            try {
-                const memberResponse = await authApi(token).get(endpoints['groupMember'](groupId));
-                if (memberResponse.status === 200) {
-                    const members = memberResponse.data;
-                    
-                    // Kiểm tra xem user_id có nằm trong danh sách thành viên hay không
-                    const userId = currentuser.id;
-                    const isUserInGroup = members.some(member => member.user=== userId);
-                    if (isUserInGroup) {
-                      console.log(`User ID ${userId} is in group ID ${groupId}`);
-                      groupsUserIn.push(group);
-                  }
-                }
-            } catch (error) {
-                console.error(`Lỗi khi lấy thành viên của nhóm ${groupId}:`, error);
-            }
-          }
-          setGroup(groupsUserIn)
-          
-        }          
+    if (!currentuser) {
+      console.error('currentuser is null or undefined');
+      return;
+    } 
+    if(pageG>0){      
+    try {     
+        setLoading(true);
+        let url = `${endpoints['groups']}?page=${pageG}`
+        let token = await AsyncStorage.getItem('token');
+        let response = await authApi(token).get(url);
+                                     
+        if (pageG === 1)
+          setGroup(response.data.results);
+        else if (pageG > 1)
+          setGroup(current => {
+              return [...current, ...response.data.results]
+          });
+        if (response.data.next === null)
+          setPageG(0);         
     } catch (error) {           
-        console.error("Lỗi !!!", error);
+        console.error("Lỗi tải group", error);
     }  
-    setLoading(false);
+    finally {
+      setLoading(false);
+    }
+  }
 };
-  useEffect(() => {
-    hienThiDanhSachNhom();
-  }, []);
-  useEffect(() => {
-        const fetchUsers = async () => {
+const fetchUsers = async () => {
+  if (!currentuser) {
+    console.error('currentuser is null or undefined');
+    return;
+  }
+  if(pageU>0){
             setLoading(true);
             try {
-                const token = await AsyncStorage.getItem('token');
-                console.log(token) ;
-                const response = await authApi(token).get(endpoints['users']);
-                console.log(response.data);          
-                setUsers(response.data);
-                setfilterUsers(response.data);
+                let token = await AsyncStorage.getItem('token');               
+                const url = `${endpoints['users']}?page=${pageU}`
+                const response = await authApi(token).get(url);
+                console.log(response.data);                      
+                if (pageU === 1){
+                  setUsers(response.data.results);
+                  setfilterUsers(response.data.results);
+                }
+                else if (pageU > 1){
+                  setUsers(prevUsers => [...prevUsers, ...response.data.results]);
+                  setfilterUsers(prevUsers => [...prevUsers, ...response.data.results]);
+                }
+                if (response.data.next === null)
+                  setPageU(0); 
             } catch (error) {                
                 console.error("Lỗi hien thi User", error);
             }  
             setLoading(false);
+          }
         };
+  useEffect(() => {
+    hienThiDanhSachNhom();
+    setId(currentuser.id)
+  }, [pageG]);
+  useEffect(() => {     
         fetchUsers();
-    }, []);
+        
+    }, [pageU]);
     // useEffect(() => {
     //     // Log the users state whenever it changes
     //     console.log("Users state:", users);
@@ -149,7 +172,7 @@ const Nhom =()=>{
         // Add logic to filter the user list based on search query
     }
     
-    const CreateGroup = () => {
+  const CreateGroup = () => {
       // Logic to create a group with selectedUsers
       setShowDialog(true); 
       
@@ -161,53 +184,34 @@ const Nhom =()=>{
           console.error('currentuser is null or undefined');
           return;
         }
-        const token = await AsyncStorage.getItem('token');
-        console.log(token) ;
-        console.log(groupName) ;
-        console.log(currentuser.id) ;
+        const token = await AsyncStorage.getItem('token');        
         const requestData = {
-          name: groupName,
-          create_by: currentuser.id
+          name: groupName,         
       };
       console.log(requestData);
-        const response = await authApi(token).post(endpoints['groups'], requestData,{
+        const response = await authApi(token).post(endpoints['createGroup'], requestData,{
             headers: {
                 'Content-Type': 'application/json',
               },
         });       
           if (response.status === 201) {
             Alert.alert('Tạo nhóm thành công');
-            setShowDialog(false); 
-            hienThiDanhSachNhom();                    
-                const secondResponse = await authApi(token).get(endpoints['groups']);
-                const groupsList = secondResponse.data; // Giả sử phản hồi trả về một object có key 'groups' chứa danh sách nhóm
-                console.log('Danh sách nhóm:', groupsList);                            
-                let groupId = null;
-                for (let i = 0; i < groupsList.length; i++) {
-                  if (groupsList[i].name === groupName) {
-                    groupId = groupsList[i].id;
-                    break;
-                  }
-                }           
-                if (groupId) {
-                  console.log(`ID của nhóm "${groupName}":`, groupId);
-                  addLeaderToGroup(groupId,token, currentuser.id);
-                  addUserToGroup(groupId,selectedUsers,token);
-                  
-                } else {
-                  console.log(`Không tìm thấy nhóm có tên "${groupName}".`);
-                }                       
+            setShowDialog(false);           
+            let gr = response.data;                                                                 
+                  addLeaderToGroup(gr.id,token, currentuser.id);
+                  addUserToGroup(gr.id,selectedUsers,token);                                                      
           } else {
             Alert.alert('Tạo nhóm thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
           }  
       } catch (error) {
         console.error('Lỗi khi tạo nhóm:', error);
+        Alert.alert('Tạo nhóm thất bại', 'Tên nhóm đã tồn tại')
       } finally {
         setLoading(false);
       }
     
     
-  }
+    }
     const HienThiSearch =async () =>{
       setShowSearch(prevShowSearch =>!prevShowSearch);
       
@@ -243,14 +247,15 @@ const Nhom =()=>{
                        {loading ? (
                         <ActivityIndicator size="large" color="#0000ff" />
                     ) : (
-                      <ScrollView style={Styles.userList}>
-                                
+                      <ScrollView style={Styles.userList} onScroll={loadMoreU}>
+                           <RefreshControl onRefresh={() => filterusers()} />
+                           {loading && <ActivityIndicator/>}
                             {/* {users.map(user => <List.Item key={user.id} title={[user.last_name , user.fisrt_name]} description={user.username}
                             left={()=> <Image style={Styles.avatar} source={{uri:user.avatar}}/>} />)} */}
                           {users && users.length > 0 ? (
                              
                               filterusers.map((user) => (
-                                user.id !== currentuser.id && (
+                                user.id !== id && (
                                   <View key={user.id} style={Styles.userItem}>
                                       <Checkbox
                                           status={selectedUsers.includes(user.id) ? 'checked' : 'unchecked'}
@@ -267,7 +272,8 @@ const Nhom =()=>{
                             )
                           ) : (
                               <Text>No users available</Text>
-                          )} 
+                          )}
+                          {loading && pageU > 1 && <ActivityIndicator/>}
                       </ScrollView>)}
                       <Button
                           mode="contained"
@@ -280,27 +286,28 @@ const Nhom =()=>{
                   </View>
               )}
               <View style={[Styles.headerContainer, { flexDirection: 'row', alignItems: 'center' }]}>           
-              <IconButton icon="format-list-bulleted" size={20} />
+              <IconButton  icon="format-list-bulleted" size={20} />
               <Text style={[Styles.boldText, Styles.fontSize]} >Danh sách các nhóm bạn đã tham gia</Text>           
               </View>
          {!showSearch && (                    
-                    <ScrollView style={Styles.scrollView}>
-                        {group.map(group => (
+                    <ScrollView style={Styles.scrollView} onScroll={loadMoreG}>
+                       <RefreshControl onRefresh={() => Refesh()} />
+                       {loading && <ActivityIndicator/>}
+                        {
+                         group.map(group => (
                             <TouchableOpacity
                                 key={group.id}
                                 style={Styles.groupButton}
-                                onPress={() => onPressGroup(group.id)}
+                                onPress={() => onPressGroup(group)}
                             >
                                 <View style={Styles.groupContainer}>
-                                    {/* <Image
-                                        source={require('./path_to_your_icon.png')} // Thay đổi path tới icon của bạn
-                                        style={Styles.groupIcon}
-                                    /> */}
+                                    
                                     <IconButton icon="wechat" size={20} />
                                     <Text style={Styles.groupButtonText}>{group.name}</Text>
                                 </View>
                             </TouchableOpacity>
                         ))}
+                        {loading && pageG > 1 && <ActivityIndicator/>}
                     </ScrollView> 
                
             )}

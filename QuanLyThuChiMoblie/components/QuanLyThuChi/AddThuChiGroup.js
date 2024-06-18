@@ -1,6 +1,6 @@
 import React,{ useContext, useState, useEffect } from "react";
-import { View, TouchableOpacity, ScrollView, Alert, RefreshControl,ActivityIndicator, ImageBackground, Image} from "react-native";
-import { Button,  TextInput , Text, IconButton, Icon} from "react-native-paper";
+import { View, TouchableOpacity, ScrollView, Alert, RefreshControl,ActivityIndicator, Icon} from "react-native";
+import { Button,  TextInput , Text, IconButton} from "react-native-paper";
 import { MyDispatchContext, MyLoadSelfContext, MyUserContext } from "../../configs/Contexts";
 import Styles from "./Styles";
 import moment from "moment"; 
@@ -9,7 +9,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import APIs, { authApi, endpoints } from '../../configs/APIs';
 import CaNhanStyle from "../../styles/CaNhanStyle";
 import { isCloseToBottom  } from "../Utils/Utils";
-const CaNhan = ({}) => {
+import { useRoute ,useNavigation } from '@react-navigation/native';
+
+const   AddThuChiGroup = ({}) => {
+    const route = useRoute();
     const user = useContext(MyUserContext);
     const dispatch = useContext(MyDispatchContext);
     const [showThu, setShowThu] = useState(true); // State để điều khiển hiển thị phần tiền thu
@@ -24,7 +27,8 @@ const CaNhan = ({}) => {
     const [loading, setLoading] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState("");
     const [page, setPage]= useState(1);
-
+    const navigation = useNavigation();
+    const { group } = route.params;
     useEffect(() => {
         loadCategories(); 
       }, [page]);
@@ -36,7 +40,7 @@ const CaNhan = ({}) => {
       }
     const loadCategories = async () => {
         if(page>0){
-            let url = `${endpoints['category']}?page=${page}`
+            let url = `${endpoints['categoryGroup']}?page=${page}`
         try {
             setLoading(true);
             let token = await AsyncStorage.getItem('token');
@@ -54,8 +58,8 @@ const CaNhan = ({}) => {
         } finally {
             setLoading(false);     
         }
-    }
-      };
+        }
+    };
     const addTransaction = async () => {
         setLoading(true);
         try {
@@ -76,8 +80,7 @@ const CaNhan = ({}) => {
                   },
             });
             if (response.status ===200){
-                Alert.alert('Thêm khoản chi thành công');
-                       
+                Alert.alert('Thêm khoản chi thành công');                   
             }      
         } catch (error) {                
             console.error("Lỗi khi thêm khoản thu", error);
@@ -143,7 +146,13 @@ const CaNhan = ({}) => {
     };
     return (
         <View style={CaNhanStyle.container}>
+            
         <View style={CaNhanStyle.type}>
+            <Button  icon={() => <IconButton icon='arrow-left' color='#000' size={30} />}
+                 mode='contained'
+                 onPress={() => navigation.goBack()}
+                 style={CaNhanStyle.button}>
+               </Button>
             <Button
                 style={[CaNhanStyle.buttonType, showChi ? CaNhanStyle.ButtonSelect : null]}
                 mode="contained"
@@ -210,20 +219,15 @@ const CaNhan = ({}) => {
                             {categories.map((category) => (
                                 category.transaction_type === 'expense' &&
                                 <View key={category.id}>
-                                      
-                                      <Button
+                                    <Button
                                         style={[CaNhanStyle.categoryItem, selectedCategoryId === category.id ? CaNhanStyle.categorySelect : null]}
                                         mode="contained"
-                                        contentStyle={{ flexDirection: 'column', alignItems: 'center' }}
-                                        labelStyle={{ textAlign: 'center' }}
                                         onPress={() => CategoryClick(category.id)}
-                                        >
+                                    >
                                         <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                                             
                                             <Text style={{ textAlign: 'center', width: '100%' }} numberOfLines={3} ellipsizeMode="tail">{category.name}</Text>
                                             <Icon size={30} source={category.icon.slice(13)}/> 
-                
-                                
                                         </View>
                                     </Button>
                                 </View>
@@ -234,7 +238,7 @@ const CaNhan = ({}) => {
                 </ScrollView>
                 
             ) : (<ScrollView style={{ flex: 1 }} onScroll={loadMore}>
-		    <RefreshControl onRefresh={() => loadCategories()} />
+		<RefreshControl onRefresh={() => loadCategories()} />
                 {loading && <ActivityIndicator/>}
                     <View>
                         <View style={CaNhanStyle.categoryContainer}>
@@ -249,7 +253,7 @@ const CaNhan = ({}) => {
                                         onPress={() => CategoryClick(category.id)}
                                     >
                                         <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-                                            
+                                       
                                             <Text style={{ textAlign: 'center', width: '100%' }} numberOfLines={3} ellipsizeMode="tail">{category.name}</Text>
                                             <Icon size={30} source={category.icon.slice(13)}/> 
                                         </View>
@@ -274,4 +278,4 @@ const CaNhan = ({}) => {
     );
 }
 
-export default CaNhan;
+export default AddThuChiGroup;

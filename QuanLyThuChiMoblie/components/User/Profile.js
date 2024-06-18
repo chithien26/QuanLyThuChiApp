@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import { View, Text, Image, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from "react-native";
 import { Button, Icon } from "react-native-paper";
 import { MyDispatchContext, MyUserContext, TransactionContext} from "../../configs/Contexts";
 import MyStyles from "../../styles/MyStyles";
@@ -9,79 +9,69 @@ import Style from "./Style";
 import { Avatar } from 'react-native-paper';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
+import { isCloseToBottom, formatAmount, formatDate } from "../Utils/Utils";
+
 
 const Profile = () => {
     const user = useContext(MyUserContext);
     const dispatch = useContext(MyDispatchContext);
-   
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
     const [transactions,setTransactions] = useState([]);
+    const [page, setPage]= useState(1);
+    const onPressXemThem = (group) => {
+        navigation.navigate('CaNhanDetail', { transactions });
+    };
     const avatarUrl = user && user.avatar
     ? `https://res.cloudinary.com/chithien26/${user.avatar}`
     : null;
     const Refesh=()=>{
-        
-        loadSelf();
-        
+        setPage(1);
+        loadSelf(); 
     }
+    const loadMore = ({nativeEvent}) => {
+        if (loading===false && isCloseToBottom(nativeEvent) && page !==0) {
+            setPage(page + 1);
+            console.log(page)
+        }
+      }
     const Logout = () => {
         dispatch({ type: "logout" });
         navigation.navigate('Login');
     };
     useEffect(() => {
         loadSelf(); // Gọi loadSelf khi thành phần Profile được render
-    }, []);
+    }, [page]);
     const loadSelf = async () => {
-      setLoading(true);
-      try {
-          const token = await AsyncStorage.getItem('token');
-          const response = await authApi(token).get(endpoints['transactionSelf']);
-          if (response.status === 200) {
-            setTransactions(response.data)
-            console.log(transactions)
-          } else {
-              console.log('Lỗi khi gọi API lấy danh sách giao dịch:', response.status);
-          }
-      } catch (error) {
-          console.error('Lỗi trong quá trình gọi API:', error);
-      }
-      setLoading(false);
-    };
-    const formatDate = (date) => {
-        const formattedDate = moment(date).format("DD/MM/YYYY [(]ddd[)]");
-        return formattedDate;
-    };
-    const formatAmount = (text) => {
-        let truncated = text.slice(0, -2);
-
-        // Xóa các ký tự không phải số
-        let cleaned = truncated.replace(/\D/g, '');
-    
-        // Đảo ngược chuỗi số để thêm dấu phẩy từ phải qua trái
-        let reversed = cleaned.split('').reverse().join('');
-    
-        // Thêm dấu phẩy sau mỗi ba chữ số
-        let formatted = '';
-        for (let i = 0; i < reversed.length; i++) {
-          if (i % 3 === 0 && i !== 0) {
-            formatted += ',';
-          }
-          formatted += reversed[i];
+      if(page>0){
+      let url = `${endpoints['transactionSelf']}?page=${page}`
+      console.log(url)
+      try {   
+        setLoading(true);
+          let token = await AsyncStorage.getItem('token');
+          let res = await authApi(token).get(url);
+          if (page === 1)
+                    setTransactions(res.data.results);
+                else if (page > 1)
+                    setTransactions(current => {
+                        return [...current, ...res.data.results]                        
+                    });
+                    
+                if (res.data.next === null)
+                    setPage(0);
+            } catch (ex) {
+                console.error(ex);
+            } finally {
+                setLoading(false);
+            }
         }
-    
-        // Đảo ngược lại để trở về trình tự ban đầu
-        formatted = formatted.split('').reverse().join('');
-    
-        // Lưu giá trị đã được định dạng vào state
-        return formatted;
-      };
+    };
     return (
         
         <View style={[MyStyles.container, MyStyles.margin]}>
             
             {user ? (
-                <View style={[Style.margin,Style.scrollview]}>
+                <View style={Style.margin}>
                     <View style={Style.userInfoContainer}>
                         <View style={Style.ColumnPicture} >
                             <Avatar.Image
@@ -104,15 +94,21 @@ const Profile = () => {
                     </View>
                     <View style={Style.detailContainer}>
                         <Text style={Style.userName}>Hoạt động gần đây </Text>
-                        <Text>
-                            <Button onPress ={Refesh} icon="autorenew">Refesh </Button>
-                        </Text>
+                        
+                        <TouchableOpacity 
+                         onPress={() => onPressXemThem(transactions)}>
+                           <Text style={Style.userName}>              Xem thêm</Text>
+                        </TouchableOpacity>
+                        
                     </View>
                     
-                    <ScrollView style={Style.scrollview} >
-                        <RefreshControl onRefresh={()=>loadSelf()}/>
-                        <View style={[Style.container,Style.scrollview]}>
-                        {transactions.slice().sort((a, b) => b.id - a.id).map((transaction) => (
+                    <ScrollView  onScroll={loadMore}>
+                        <RefreshControl onRefresh={() => Refesh()} />
+                        {loading && <ActivityIndicator/>}
+                        <View >
+                        { transactions !==null &&
+                         transactions.slice().sort((a, b) => b.id - a.id).map((transaction) => (
+
                                     <View key={transaction.id} style={Style.transactionRow}>
                                         <TouchableOpacity style={Style.transactionContainer} >
                                             <View style={Style.transactionContent}>
@@ -140,9 +136,12 @@ const Profile = () => {
                                     </View>
                                 ))}
                         </View>
-
+                        {loading && page > 1 && <ActivityIndicator/>}            
                     </ScrollView>
+                   
+                   
                 </View>
+                
             ) : (
                 <Text style={MyStyles.subject}>Loading...</Text>
             )}
