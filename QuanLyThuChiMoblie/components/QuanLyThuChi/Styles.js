@@ -25,7 +25,8 @@ export default StyleSheet.create({
     },
     buttonLabel: {
         fontSize: 16,
-    },searchSection: {
+    },
+    searchSection: {
         marginTop: 20,
         flex:1,
     },
@@ -44,16 +45,21 @@ export default StyleSheet.create({
         marginTop: 20,
     },
     avatar:{
-        width:80,
-        height:80,
-        borderRadius:20
-    },boldText: {
+        width:60,
+        height:60,
+        borderRadius:20,
+        
+    },
+    boldText: {
         fontWeight: 'bold',
-    },headerContainer: {
+    },
+    headerContainer: {
         margin: 10,
-    },fontSize:{
+    },
+    fontSize:{
         fontSize: 16,
-    },scrollView: {
+    },
+    scrollView: {
         flex: 1,
         padding: 10,
     },
@@ -82,7 +88,7 @@ export default StyleSheet.create({
         alignItems: 'center', 
         
         backgroundColor: '#fff',
-        paddingTop:50
+        paddingTop:30,
     },
     buttonThu:{ 
         borderRadius:5,
@@ -104,14 +110,17 @@ export default StyleSheet.create({
         flexDirection: 'row',       
         alignItems: 'center',        
         padding:5,
-    }, fontSizeView:{
+    }, 
+    fontSizeView:{
         fontSize:20,
-    }, touChable:{
+    }, 
+    touChable:{
         backgroundColor:'#C0C0C0',
         flex: 1,
         alignItems: 'center',    
         padding:5,
-    },  modalContainer: {
+    },  
+    modalContainer: {
         backgroundColor: "white",
         padding: 20,
         margin: 50,
@@ -120,7 +129,46 @@ export default StyleSheet.create({
       },textInput:{
         backgroundColor:'#C0C0C0',
         flex: 1,
-        alignItems: 'center',    
         
+        
+    }, 
+    categoryContainer: {
+        flexDirection: 'row',
+        marginTop: 5,
+        paddingHorizontal: 2,
+        flexWrap: 'wrap', // Cho phép các thành phần con được bao bọc trên nhiều dòng
+      },
+      categoryRow: {
+        flexDirection: 'row', // Hiển thị dạng hàng ngang
+        marginBottom: 2,
+      
+        justifyContent: 'space-between', // Căn chỉnh các button cách đều nhau
+      },
+      categoryButton: {
+        height: 100, 
+        width: 125, // Chiếm 30% chiều rộng của mỗi cột để hiển thị 3 cột trên một dòng
+        marginHorizontal: 2,
+        marginVertical: 2,
+        backgroundColor: '#C0C0C0',
+        borderRadius: 10,
+        paddingVertical: 0,
+      },
+      btnThu:{
+        margin: 10,
+        marginTop: 10, 
+        backgroundColor: '#808080',
+      },
+      selectedCategoryButton: {
+        backgroundColor: '#808080', // Màu nền khi button được chọn
     },
+    Column: {
+        flexDirection: 'column',  // Sắp xếp các phần tử theo cột
+        justifyContent: 'center', // Căn giữa theo chiều dọc
+       // Căn giữa theo chiều ngang
+        padding: 10,
+        
+        borderRadius: 5,
+        
+       
+      },
 });

@@ -1,5 +1,5 @@
 import React,{ useContext, useState, useEffect } from "react";
-import { View, TouchableOpacity, ScrollView, Alert, RefreshControl,ActivityIndicator, ImageBackground, Image} from "react-native";
+import { View, TouchableOpacity, ScrollView, Alert, RefreshControl,ActivityIndicator} from "react-native";
 import { Button,  TextInput , Text, IconButton, Icon} from "react-native-paper";
 import { MyDispatchContext, MyLoadSelfContext, MyUserContext } from "../../configs/Contexts";
 import Styles from "./Styles";
@@ -7,9 +7,12 @@ import moment from "moment";
 import DateTimePicker from "react-native-modal-datetime-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import APIs, { authApi, endpoints } from '../../configs/APIs';
-import CaNhanStyle from "../../styles/CaNhanStyle";
+import AddThuChiGroupStyle from "../../styles/AddThuChiGroupStyle";
 import { isCloseToBottom  } from "../Utils/Utils";
-const CaNhan = ({}) => {
+import { useRoute ,useNavigation } from '@react-navigation/native';
+
+const   AddThuChiGroup = ({}) => {
+    const route = useRoute();
     const user = useContext(MyUserContext);
     const dispatch = useContext(MyDispatchContext);
     const [showThu, setShowThu] = useState(true); // State để điều khiển hiển thị phần tiền thu
@@ -24,7 +27,8 @@ const CaNhan = ({}) => {
     const [loading, setLoading] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState("");
     const [page, setPage]= useState(1);
-
+    const navigation = useNavigation();
+    const { group } = route.params;
     useEffect(() => {
         loadCategories(); 
       }, [page]);
@@ -36,7 +40,7 @@ const CaNhan = ({}) => {
       }
     const loadCategories = async () => {
         if(page>0){
-            let url = `${endpoints['category']}?page=${page}`
+            let url = `${endpoints['categoryGroup']}?page=${page}`
         try {
             setLoading(true);
             let token = await AsyncStorage.getItem('token');
@@ -54,8 +58,8 @@ const CaNhan = ({}) => {
         } finally {
             setLoading(false);     
         }
-    }
-      };
+        }
+    };
     const addTransaction = async () => {
         setLoading(true);
         try {
@@ -76,8 +80,7 @@ const CaNhan = ({}) => {
                   },
             });
             if (response.status ===200){
-                Alert.alert('Thêm khoản chi thành công');
-                       
+                Alert.alert('Thêm khoản chi thành công');                   
             }      
         } catch (error) {                
             console.error("Lỗi khi thêm khoản thu", error);
@@ -142,34 +145,40 @@ const CaNhan = ({}) => {
        
     };
     return (
-        <View style={CaNhanStyle.container}>
-        <View style={CaNhanStyle.type}>
+        <View style={AddThuChiGroupStyle.container}>
+            
+        <View style={AddThuChiGroupStyle.type}>
+            <Button  icon={() => <IconButton icon='arrow-left' color='#000' size={30} />}
+                 mode='contained'
+                 onPress={() => navigation.goBack()}
+                 style={[AddThuChiGroupStyle.buttonType, AddThuChiGroupStyle.buttonGoBack]}>
+               </Button>
             <Button
-                style={[CaNhanStyle.buttonType, showChi ? CaNhanStyle.ButtonSelect : null]}
+                style={[AddThuChiGroupStyle.buttonType, showChi ? AddThuChiGroupStyle.ButtonSelect : null]}
                 mode="contained"
                 onPress={ShowChi}>
                 Tiền chi
             </Button>
             <Button
-                style={[CaNhanStyle.buttonType, showThu ? CaNhanStyle.ButtonSelect : null]}
+                style={[AddThuChiGroupStyle.buttonType, showThu ? AddThuChiGroupStyle.ButtonSelect : null]}
                 mode="contained"
                 onPress={ShowThu}>
                 Tiền thu
             </Button>
         </View>  
-        <View style={CaNhanStyle.input}>         
-            <View style={[CaNhanStyle.inputElement,CaNhanStyle.inputNgay]}>
-                <Text style={CaNhanStyle.title}>Ngày:</Text>
+        <View style={AddThuChiGroupStyle.input}>         
+            <View style={[AddThuChiGroupStyle.inputElement,AddThuChiGroupStyle.inputNgay]}>
+                <Text style={AddThuChiGroupStyle.title}>Ngày:</Text>
                 <IconButton onPress={CreateDate} icon="calendar-month" size={20} />
-                <TouchableOpacity style={CaNhanStyle.calendar} onPress={CreateDate}>
+                <TouchableOpacity style={AddThuChiGroupStyle.calendar} onPress={CreateDate}>
                    
                     <Text  style={[Styles.boldText,Styles.fontSizeView]}> {formatDate(date)}</Text>
                 </TouchableOpacity>
             </View>
 
-            <View style={[CaNhanStyle.inputElement,CaNhanStyle.inputTen]}>
-                <Text style={CaNhanStyle.title}>Tên</Text>
-                <TextInput style={CaNhanStyle.textInput} 
+            <View style={[AddThuChiGroupStyle.inputElement,AddThuChiGroupStyle.inputTen]}>
+                <Text style={AddThuChiGroupStyle.title}>Tên</Text>
+                <TextInput style={AddThuChiGroupStyle.textInput} 
                     value={name}
                     onChangeText={NameChange}
                     placeholder="Nhập tên"
@@ -178,9 +187,9 @@ const CaNhan = ({}) => {
                     />                   
             </View>
 
-            <View style={[CaNhanStyle.inputElement,CaNhanStyle.inputGhiChu]}>
-                <Text style={CaNhanStyle.title}>Ghi chú</Text>
-                <TextInput style={CaNhanStyle.textInput}
+            <View style={[AddThuChiGroupStyle.inputElement,AddThuChiGroupStyle.inputGhiChu]}>
+                <Text style={AddThuChiGroupStyle.title}>Ghi chú</Text>
+                <TextInput style={AddThuChiGroupStyle.textInput}
                     value={note}
                     onChangeText={NoteChange}
                     placeholder="Nhập ghi chú"
@@ -188,9 +197,9 @@ const CaNhan = ({}) => {
                     numberOfLines={2}
                     />                   
             </View>
-            <View style={[CaNhanStyle.inputElement,CaNhanStyle.inputTien]}>
-                <Text style={CaNhanStyle.title}>{showChi ? 'Tiền chi' : 'Tiền thu'}</Text>
-                <TextInput style={CaNhanStyle.textInput}
+            <View style={[AddThuChiGroupStyle.inputElement,AddThuChiGroupStyle.inputTien]}>
+                <Text style={AddThuChiGroupStyle.title}>{showChi ? 'Tiền chi' : 'Tiền thu'}</Text>
+                <TextInput style={AddThuChiGroupStyle.textInput}
                    value={amountHienThi}
                    onChangeText={formatAmount}
                    keyboardType="numeric" // Hiển thị bàn phím số
@@ -206,24 +215,19 @@ const CaNhan = ({}) => {
 		<RefreshControl onRefresh={() => loadCategories()} />
                     {loading && <ActivityIndicator/>}
                     <View>
-                        <View style={CaNhanStyle.categoryContainer}>
+                        <View style={AddThuChiGroupStyle.categoryContainer}>
                             {categories.map((category) => (
                                 category.transaction_type === 'expense' &&
                                 <View key={category.id}>
-                                      
-                                      <Button
-                                        style={[CaNhanStyle.categoryItem, selectedCategoryId === category.id ? CaNhanStyle.categorySelect : null]}
+                                    <Button
+                                        style={[AddThuChiGroupStyle.categoryItem, selectedCategoryId === category.id ? AddThuChiGroupStyle.categorySelect : null]}
                                         mode="contained"
-                                        contentStyle={{ flexDirection: 'column', alignItems: 'center' }}
-                                        labelStyle={{ textAlign: 'center' }}
                                         onPress={() => CategoryClick(category.id)}
-                                        >
+                                    >
                                         <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                                             
                                             <Text style={{ textAlign: 'center', width: '100%' }} numberOfLines={3} ellipsizeMode="tail">{category.name}</Text>
                                             <Icon size={30} source={category.icon.slice(13)}/> 
-                
-                                
                                         </View>
                                     </Button>
                                 </View>
@@ -234,22 +238,22 @@ const CaNhan = ({}) => {
                 </ScrollView>
                 
             ) : (<ScrollView style={{ flex: 1 }} onScroll={loadMore}>
-		    <RefreshControl onRefresh={() => loadCategories()} />
+		<RefreshControl onRefresh={() => loadCategories()} />
                 {loading && <ActivityIndicator/>}
                     <View>
-                        <View style={CaNhanStyle.categoryContainer}>
+                        <View style={AddThuChiGroupStyle.categoryContainer}>
                             {categories.map((category) => (
                                 category.transaction_type === 'income' &&
                                 <View key={category.id}>
                                     <Button
-                                        style={[CaNhanStyle.categoryItem, selectedCategoryId === category.id ? CaNhanStyle.categorySelect : null]}
+                                        style={[AddThuChiGroupStyle.categoryItem, selectedCategoryId === category.id ? AddThuChiGroupStyle.categorySelect : null]}
                                         mode="contained"
                                         contentStyle={{ flexDirection: 'column', alignItems: 'center' }}
                                         labelStyle={{ textAlign: 'center' }}
                                         onPress={() => CategoryClick(category.id)}
                                     >
                                         <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-                                            
+                                       
                                             <Text style={{ textAlign: 'center', width: '100%' }} numberOfLines={3} ellipsizeMode="tail">{category.name}</Text>
                                             <Icon size={30} source={category.icon.slice(13)}/> 
                                         </View>
@@ -268,10 +272,10 @@ const CaNhan = ({}) => {
                     onCancel={() => setShowDate(false)}
                     date={date}
                 />
-            {showChi ? <Button onPress={addTransaction} style={CaNhanStyle.buttonAdd} mode="contained">Nhập khoản chi</Button> 
-            : <Button onPress={addTransaction} style={CaNhanStyle.buttonAdd} mode="contained">Nhập khoản thu</Button>}          
+            {showChi ? <Button onPress={addTransaction} style={AddThuChiGroupStyle.buttonAdd} mode="contained">Nhập khoản chi</Button> 
+            : <Button onPress={addTransaction} style={AddThuChiGroupStyle.buttonAdd} mode="contained">Nhập khoản thu</Button>}          
         </View>
     );
 }
 
-export default CaNhan;
+export default AddThuChiGroup;
