@@ -220,8 +220,8 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
                             status=status.HTTP_400_BAD_REQUEST)
 
         t = TransactionGroup.objects.create(name=name, amount=amount, timestamp=timestamp,
-                                           transaction_category=transaction_category, description=description,
-                                           user=user, group=group)
+                                            transaction_category=transaction_category, description=description,
+                                            user=user, group=group)
         return Response(serializers.TransactionGroupSerializer(t).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='create_survey', detail=True)
@@ -316,8 +316,6 @@ class TransactionCategoryGroupViewSet(viewsets.ViewSet, generics.ListAPIView, ge
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 class TransactionSelfViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.DestroyAPIView):
     queryset = TransactionSelf.objects.filter(active=True)
     serializer_class = TransactionSelfSerializer
@@ -397,6 +395,22 @@ class TransactionGroupViewSet(viewsets.ViewSet, generics.ListAPIView, generics.R
             transaction = TransactionGroup.objects.get(pk=pk)
         except TransactionGroup.DoesNotExist:
             return Response({"error": "Transaction group not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TransactionGroupSerializer(transaction, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['put'], url_path='accept', detail=True)
+    def accept_transaction(self, request, pk):
+
+        transaction = TransactionGroup.objects.get(id=pk)
+        # id = transaction.group.id
+        # group = Group.objects.filter(pk=id)
+
+        transaction.accept = True
+        transaction.save()
+
         serializer = TransactionGroupSerializer(transaction, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
