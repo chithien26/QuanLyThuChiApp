@@ -31,6 +31,7 @@ const   AddThuChiGroup = ({}) => {
     const { group } = route.params;
     useEffect(() => {
         loadCategories(); 
+        console.log(group.id)
       }, [page]);
     const loadMore = ({nativeEvent}) => {
         if (loading===false && isCloseToBottom(nativeEvent) && page !==0) {
@@ -40,7 +41,7 @@ const   AddThuChiGroup = ({}) => {
       }
     const loadCategories = async () => {
         if(page>0){
-            let url = `${endpoints['categoryGroup']}?page=${page}`
+            let url = `${endpoints['categoryGroup'](group.id)}?page=${page}`;
         try {
             setLoading(true);
             let token = await AsyncStorage.getItem('token');
@@ -74,12 +75,12 @@ const   AddThuChiGroup = ({}) => {
                 transaction_category_id: selectedCategoryId,              
             };
             console.log(requestData)
-            const response = await authApi(token).post(endpoints['addTransactionSelf'], requestData,{
+            const response = await authApi(token).post(endpoints['addTransactionGroup'](group.id), requestData,{
                 headers: {
                     'Content-Type': 'application/json',
                   },
             });
-            if (response.status ===200){
+            if (response.status ===201){
                 Alert.alert('Thêm khoản chi thành công');                   
             }      
         } catch (error) {                
@@ -145,7 +146,7 @@ const   AddThuChiGroup = ({}) => {
        
     };
     return (
-        <View style={CaNhanStyle.container}>
+        <View style={AddThuChiGroupStyle.container}>
             
         <View style={AddThuChiGroupStyle.type}>
             <Button  icon={() => <IconButton icon='arrow-left' color='#000' size={30} />}

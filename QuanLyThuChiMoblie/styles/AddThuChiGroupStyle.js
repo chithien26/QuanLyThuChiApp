@@ -18,22 +18,20 @@ export default StyleSheet.create({
         flexWrap: "nowrap",
         flexDirection: "row",
     },
-    buttonGoBack:{
-        alignSelf:"flex-start",
-        width:100,
-        backgroundColor: '#FFFFFF', 
-        marginLeft:0,
-        paddingLeft:0,
+    buttonGoBack: {
+        margin:0,
+        backgroundColor:  '#FFFFFF', 
+        
     },
     buttonType:{
         marginLeft: 6, 
         marginRight: 6, 
-        width: 110,
+        width: 120,
         marginBottom: 1, 
         backgroundColor: '#BBBBBB',
-        height: 46,
-        justifyContent: "center",  
-        alignContent:"center",
+        justifyContent: 'center', 
+        alignContent: 'center', 
+        height: 50,
 
     },
     ButtonSelect: {

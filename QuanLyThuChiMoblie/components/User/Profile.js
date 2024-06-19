@@ -1,9 +1,9 @@
-import { useContext, useState, useEffect } from "react";
+import React,{ useContext, useState, useEffect } from "react";
 import { View, Text, Image, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from "react-native";
 import { Button, Icon } from "react-native-paper";
 import { MyDispatchContext, MyUserContext, TransactionContext} from "../../configs/Contexts";
 import MyStyles from "../../styles/MyStyles";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation ,useRoute} from '@react-navigation/native';
 import APIs, { authApi, endpoints } from '../../configs/APIs';
 import Style from "./Style";
 import { Avatar } from 'react-native-paper';
@@ -19,7 +19,7 @@ const Profile = () => {
     const [loading, setLoading] = useState(false);
     const [transactions,setTransactions] = useState([]);
     const [page, setPage]= useState(1);
-    const onPressXemThem = (group) => {
+    const onPressXemThem = (transactions) => {
         navigation.navigate('CaNhanDetail', { transactions });
     };
     const avatarUrl = user && user.avatar
