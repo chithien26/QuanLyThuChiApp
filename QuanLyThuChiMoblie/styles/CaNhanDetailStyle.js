@@ -32,4 +32,10 @@ export default StyleSheet.create({
         marginBottom: 1, 
         backgroundColor: '#BBBBBB',
     },
+    type1: {
+        justifyContent: "center",
+        
+        flexWrap: "nowrap",
+        flexDirection: "row",
+    }
 });

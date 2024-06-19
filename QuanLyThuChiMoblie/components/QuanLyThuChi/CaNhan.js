@@ -1,4 +1,4 @@
-import React,{ useContext, useState, useEffect } from "react";
+import React,{ useContext, useState, useEffect, useCallback } from "react";
 import { View, TouchableOpacity, ScrollView, Alert, RefreshControl,ActivityIndicator, ImageBackground, Image} from "react-native";
 import { Button,  TextInput , Text, IconButton, Icon} from "react-native-paper";
 import { MyDispatchContext, MyLoadSelfContext, MyUserContext } from "../../configs/Contexts";
@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import APIs, { authApi, endpoints } from '../../configs/APIs';
 import CaNhanStyle from "../../styles/CaNhanStyle";
 import { isCloseToBottom  } from "../Utils/Utils";
+import { useFocusEffect } from '@react-navigation/native';
 
 const CaNhan = ({}) => {
     const user = useContext(MyUserContext);
@@ -25,7 +26,13 @@ const CaNhan = ({}) => {
     const [loading, setLoading] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState("");
     const [page, setPage]= useState(1);
+    
 
+    useFocusEffect(
+        useCallback(() => {
+           loadCategories();
+        }, [])
+    );
     useEffect(() => {
         loadCategories(); 
       }, [page]);

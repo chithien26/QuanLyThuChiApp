@@ -27,7 +27,7 @@ const Nhom =()=>{
     const [pageG, setPageG]= useState(1);
     const [id, setId]=useState("");
     const onPressGroup = (group) => {
-      navigation.navigate('GroupDetail', { group });
+      navigation.navigate('GroupDetail', { group});
   };
     const Refesh=()=>{ 
       setPageG(1);     
