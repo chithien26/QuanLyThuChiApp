@@ -53,80 +53,43 @@ const CaNhanDetail = () => {
                     placeholderTextColor="#888888" // Màu chữ của placeholder
                 />
             </View>
-            {!loading1 && (
-             <ScrollView  >                        
-                        {loading && <ActivityIndicator/>}
-                        <View >
-                        { transactions !==null &&
-                         transactions.slice().sort((a, b) => b.id - a.id).map((transaction) => (
+                {loading1 && (
+                <ScrollView  >                        
+                            {loading && <ActivityIndicator/>}
+                            <View >
+                            { filterTransaction !==null &&
+                            filterTransaction.slice().sort((a, b) => b.id - a.id).map((transaction) => (
 
-                                    <View key={transaction.id} style={Style.transactionRow}>
-                                        <TouchableOpacity style={Style.transactionContainer} >
-                                            <View style={Style.transactionContent}>
-                                                {/* Tên giao dịch */}
-                                                <Text style={Style.transactionName}>{transaction.name}</Text>
+                                        <View key={transaction.id} style={Style.transactionRow}>
+                                            <TouchableOpacity style={Style.transactionContainer} >
+                                                <View style={Style.transactionContent}>
+                                                    {/* Tên giao dịch */}
+                                                    <Text style={Style.transactionName}>{transaction.name}</Text>
 
-                                                {/* Số tiền */}
-                                                <View style={Style.detailContainer}>
-                                                    <Text style={Style.detailLabel}>Số tiền:</Text>
-                                                    <Text style={Style.detailText}>{formatAmount(transaction.amount)} đ</Text>
+                                                    {/* Số tiền */}
+                                                    <View style={Style.detailContainer}>
+                                                        <Text style={Style.detailLabel}>Số tiền:</Text>
+                                                        <Text style={Style.detailText}>{formatAmount(transaction.amount)} đ</Text>
+                                                    </View>
+
+                                                    {/* Mô tả */}
+                                                    <View style={Style.detailContainer}>
+                                                        <Text style={Style.detailLabel}>Mô tả:</Text>
+                                                        <Text style={Style.detailText}>{transaction.description}</Text>
+                                                    </View>
                                                 </View>
-
-                                                {/* Mô tả */}
-                                                <View style={Style.detailContainer}>
-                                                    <Text style={Style.detailLabel}>Mô tả:</Text>
-                                                    <Text style={Style.detailText}>{transaction.description}</Text>
-                                                </View>
-                                            </View>
+                                                
+                                                {/* Thời gian */}
+                                                <Text style={Style.timestamp}>{formatDate(transaction.timestamp)}</Text>
+                                            </TouchableOpacity>
+                                                
                                             
-                                            {/* Thời gian */}
-                                            <Text style={Style.timestamp}>{formatDate(transaction.timestamp)}</Text>
-                                        </TouchableOpacity>
-                                            
-                                        
-                                    </View>
-                                ))}
-                        </View>
-                        {loading && page > 1 && <ActivityIndicator/>}            
-                    </ScrollView>  
-                     ) } 
-                     {loading1 && (
-                        <ScrollView  >                        
-                                    {loading && <ActivityIndicator/>}
-                                    <View >
-                                    { filterTransaction !==null &&
-                                    filterTransaction.slice().sort((a, b) => b.id - a.id).map((transaction) => (
-
-                                                <View key={transaction.id} style={Style.transactionRow}>
-                                                    <TouchableOpacity style={Style.transactionContainer} >
-                                                        <View style={Style.transactionContent}>
-                                                            {/* Tên giao dịch */}
-                                                            <Text style={Style.transactionName}>{transaction.name}</Text>
-
-                                                            {/* Số tiền */}
-                                                            <View style={Style.detailContainer}>
-                                                                <Text style={Style.detailLabel}>Số tiền:</Text>
-                                                                <Text style={Style.detailText}>{formatAmount(transaction.amount)} đ</Text>
-                                                            </View>
-
-                                                            {/* Mô tả */}
-                                                            <View style={Style.detailContainer}>
-                                                                <Text style={Style.detailLabel}>Mô tả:</Text>
-                                                                <Text style={Style.detailText}>{transaction.description}</Text>
-                                                            </View>
-                                                        </View>
-                                                        
-                                                        {/* Thời gian */}
-                                                        <Text style={Style.timestamp}>{formatDate(transaction.timestamp)}</Text>
-                                                    </TouchableOpacity>
-                                                        
-                                                    
-                                                </View>
-                                            ))}
-                                    </View>
-                                    {loading && page > 1 && <ActivityIndicator/>}            
-                                </ScrollView>  
-                                ) }             
+                                        </View>
+                                    ))}
+                            </View>
+                            {loading && page > 1 && <ActivityIndicator/>}            
+                        </ScrollView>  
+                        ) }             
         </View>
     );
 };

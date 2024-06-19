@@ -27,6 +27,7 @@ const GroupDetail = () => {
     };
     useEffect(() => {
         loadGroup(); // Gọi loadSelf khi thành phần Profile được render
+        
     }, []);
       const loadGroup = async () => {
         let url = `${endpoints['transactionGroup'](group.id)}`;
