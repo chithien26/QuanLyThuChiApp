@@ -228,7 +228,7 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
     def create_survey(self, request, pk):
         name = request.data.get('name')
         user = request.user
-        group = Group.objects.get(id=pk)
+        group = Group.objects.get(pk=pk)
         is_member = GroupMember.objects.filter(Q(group=group) & Q(user=user)).exists()
         if is_member:
             creator = user
@@ -240,6 +240,13 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
 
         s = Survey.objects.create(name=name, creator=creator, group=group)
         return Response(serializers.SurveySerializer(s).data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['get'], url_path='survey', detail=True)
+    def get_survey(self, request, pk):
+        group = Group.objects.get(pk=pk)
+        s = Survey.objects.filter(group=group)
+
+        return Response(serializers.SurveySerializer(s, many=True).data, status=status.HTTP_200_OK)
 
 
 class GroupMemberViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView, generics.RetrieveAPIView):
@@ -429,4 +436,15 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPI
     serializer_class = SurveySerializer
     permission_classes = [permissions.IsAuthenticated]
 
-#a
+    @action(methods=['post'], url_path='create_option', detail=True)
+    def create_option(self, request, pk):
+        date = request.data.get('date')
+        time_of_day = request.data.get('time_of_day')
+        user = request.user
+        survey = Survey.objects.get(pk=pk)
+
+        if not date or not time_of_day:
+            return Response({'error: date and time_of_date are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        option = FreetimeOption.objects.create(date=date, time_of_day=time_of_day, user=user, survey=survey)
+        return Response(serializers.FreetimeOptionSerializer(option).data, status=status.HTTP_201_CREATED)

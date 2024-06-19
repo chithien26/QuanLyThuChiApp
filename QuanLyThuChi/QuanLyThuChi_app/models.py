@@ -106,7 +106,7 @@ class TransactionGroup(BaseModelTransaction):
 
 
 class Survey(BaseModel):
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
