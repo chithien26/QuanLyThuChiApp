@@ -215,13 +215,22 @@ class GroupViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIVie
         transaction_category = TransactionCategoryGroup.objects.get(id=id)
         user = request.user
         group = Group.objects.get(id=pk)
+        accept = request.data.get('accept')
+        if accept:
+            if accept.lower() == 'true':
+                accept=True
+            else:
+                accept=False
+        else:
+            accept = False
+
         if not name or not transaction_category:
             return Response({'error': 'Name and transaction_type are required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         t = TransactionGroup.objects.create(name=name, amount=amount, timestamp=timestamp,
                                             transaction_category=transaction_category, description=description,
-                                            user=user, group=group)
+                                            user=user, group=group, accept=accept)
         return Response(serializers.TransactionGroupSerializer(t).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='create_survey', detail=True)
