@@ -1,4 +1,4 @@
-import React,{ useContext, useState, useEffect } from "react";
+import React,{ useContext, useState, useEffect , useCallback} from "react";
 import { View, Text, Image, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from "react-native";
 import { Button, Icon } from "react-native-paper";
 import { MyDispatchContext, MyUserContext, TransactionContext} from "../../configs/Contexts";
@@ -10,7 +10,7 @@ import { Avatar } from 'react-native-paper';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { isCloseToBottom, formatAmount, formatDate } from "../Utils/Utils";
-
+import { useFocusEffect } from '@react-navigation/native';
 
 const Profile = () => {
     const user = useContext(MyUserContext);
@@ -29,6 +29,11 @@ const Profile = () => {
         setPage(1);
         loadSelf(); 
     }
+    useFocusEffect(
+        useCallback(() => {
+           loadSelf();
+        }, [])
+    );
     const loadMore = ({nativeEvent}) => {
         if (loading===false && isCloseToBottom(nativeEvent) && page !==0) {
             setPage(page + 1);

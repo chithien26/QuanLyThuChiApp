@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = 'http://192.168.1.87:8000/';
+const BASE_URL = 'http://192.168.1.189:8000/';
 
 export const endpoints = {
     'login': '/o/token/',
@@ -18,6 +18,9 @@ export const endpoints = {
     'categoryGroup': (groupId) => `/group/${groupId}/transaction_category/`,
     'addTransactionGroup': (groupId) => `/group/${groupId}/add_transaction/`,
     'transactionGroup': (groupId) => `/group/${groupId}/transaction/`,
+    'userDetail':(userId)=> `/user/${userId}/`,
+    'putTransaction':(transactionId)=> `/transaction_self/${transactionId}/update/`,
+    'deleteTransaction':(transactionId)=> `/transaction_self/${transactionId}/`,
 }
 
 export const authApi = (token) => {
