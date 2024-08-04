@@ -1,4 +1,4 @@
-import React,{useState, useEffect} from 'react';
+import React,{useState, useEffect, useCallback} from 'react';
 import { View, TouchableOpacity, ScrollView, Alert, RefreshControl,ActivityIndicator, ImageBackground, Image} from "react-native";
 import { Button,  TextInput , Text, IconButton} from "react-native-paper";
 import { useRoute } from '@react-navigation/native';
@@ -8,26 +8,48 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { formatAmount, formatDate, isCloseToBottom } from '../Utils/Utils';
 import CaNhanDetailStyle from '../../styles/CaNhanDetailStyle';
 import Dialog from "react-native-dialog"; 
+import { useFocusEffect } from '@react-navigation/native';
+
 
 const CaNhanDetail = () => {
     const [showDialog, setShowDialog] = useState(false); 
-    const [showDialog1, setShowDialog1] = useState(false); 
+    const [showDialog1, setShowDialog1] = useState(false);
+    const [transactionsIncome,setTransactionsIncome] = useState([]); 
+    const [transactionsExpense,setTransactionsExpense] = useState([]);
     // const route = useRoute();
     // const {transactions} = route.params;
     const [transactions,setTransactions] = useState([]);
+    const [transactions1,setTransactions1] = useState([]);
     const [filterTransaction, setFilterTransaction] = useState(transactions);
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
     const [loading1, setLoading1] = useState(false);
+    const [loading2, setLoading2] = useState(false);
     const [categories, setCategories] = useState([]);
     const [activeFilter, setActiveFilter] = useState(null);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [page, setPage]= useState(1);
     const [transactionType, setTransactionType] = useState('');
+    // const onPressXemThem = (transactions) => {
+    //     navigation.navigate('CaNhanDetail', { transactions });
+    // };
     const Refesh=()=>{
         setPage(1);
         loadSelf(); 
     }
+    useFocusEffect(
+        useCallback(() => {
+           Refesh();
+        }, [])
+    );
+    const handleChangeAmount = (text) => {
+        // Xóa bỏ các ký tự không phải số từ chuỗi nhập vào
+        const cleanedValue = text.replace(/[^0-9]/g, '');
+        // Chuyển chuỗi đã làm sạch thành số nguyên
+        const amount = parseInt(cleanedValue, 10);
+        // Cập nhật state
+        setSelectedTransaction({ ...selectedTransaction, amount });
+    };
     useEffect(() => {
         loadAllCategories();
         loadSelf();
@@ -35,9 +57,9 @@ const CaNhanDetail = () => {
     useEffect(() => {
         if (transactionType) {
           loadSelfThuChi(transactionType);
-        }
-        loadSelf();
-      }, [transactionType]);
+          setLoading2(true);
+        }       
+      }, [transactionType, page]);
     const loadMore = ({nativeEvent}) => {
         if (loading===false && isCloseToBottom(nativeEvent) && page !==0) {
             setPage(page + 1);
@@ -61,6 +83,7 @@ const CaNhanDetail = () => {
                       
                   if (res.data.next === null)
                       setPage(0);
+            
               } catch (ex) {
                   console.error(ex);
               } finally {
@@ -77,19 +100,28 @@ const CaNhanDetail = () => {
             let token = await AsyncStorage.getItem('token');
             let res = await authApi(token).get(url);
             console.log(res.data.results)
+            if (x === 'income') {
+                setTransactionsIncome(res.data.results);
+                console.log(transactionsIncome);
+            } else {
+                    setTransactionsExpense(res.data.results);
+                    console.log(transactionsExpense);
+                }
             if (page === 1)
-                      setTransactions(res.data.results);
+                      setTransactions1(res.data.results);
                   else if (page > 1)
-                    setTransactions(current => {
+                    setTransactions1(current => {
                           return [...current, ...res.data.results]                        
                       });
                       
                   if (res.data.next === null)
                       setPage(0);
+            
               } catch (ex) {
                   console.error(ex);
               } finally {
                   setLoading(false);
+                  
               }
           }
     };
@@ -116,6 +148,7 @@ const CaNhanDetail = () => {
         try {
             setShowDialog(false);
             setLoading(true);
+            
             let token = await AsyncStorage.getItem('token');
             const updatedTransaction = {
                 name: selectedTransaction.name,
@@ -126,7 +159,7 @@ const CaNhanDetail = () => {
             const headers = {
                 
                 Authorization: `Bearer ${token}`,
-                // Thêm các headers khác nếu cần thiết
+               
             };
             
             let res = await authApi(token).put(endpoints['putTransaction'](selectedTransaction.id), updatedTransaction, { headers });
@@ -257,7 +290,7 @@ const CaNhanDetail = () => {
                     placeholderTextColor="#888888" // Màu chữ của placeholder
                 />
             </View>
-            {!loading1 && (
+            {!loading1 && !loading2 && (
              <ScrollView  onScroll={loadMore}> 
                  <RefreshControl onRefresh={() => Refesh()} />                       
                         {loading && <ActivityIndicator/>}
@@ -323,9 +356,9 @@ const CaNhanDetail = () => {
                                                         />
                                                         <Dialog.Input
                                                             label="Số tiền"
-                                                            placeholder={formatAmount(selectedTransaction.amount)}
-                                                            value={formatAmount(`${selectedTransaction.amount}`)}
-                                                            onChangeText={(text) => setSelectedTransaction({ ...selectedTransaction, amount: text })}
+                                                            placeholder={(selectedTransaction.amount)}
+                                                            value={(`${selectedTransaction.amount}`)}
+                                                            onChangeText={(handleChangeAmount)}
                                                         />
                                                         <Dialog.Input
                                                             label="Mô tả"
@@ -361,7 +394,112 @@ const CaNhanDetail = () => {
                         </View>
                         {loading && page > 1 && <ActivityIndicator/>}       
                     </ScrollView>  
-                     ) } 
+                     ) }
+        {!loading1 && loading2 && (
+             <ScrollView  onScroll={loadMore}> 
+                 <RefreshControl onRefresh={() => Refesh()} />                       
+                        {loading && <ActivityIndicator/>}
+                        <View >
+                        {transactions1 !== null && transactions1.slice().sort((a, b) => b.id - a.id).map((transaction) => (
+
+                                    <View key={transaction.id} style={Style.transactionRow}>
+                                        <TouchableOpacity style={Style.transactionContainer} onPress={()=>{ChinhSuaThuChi(transaction);}}>
+                                            <View style={Style.transactionContent}>
+                                                {/* Tên giao dịch */}
+                                                <Text style={Style.transactionName}>{transaction.name}</Text>
+
+                                                {/* Số tiền */}
+                                                <View style={Style.detailContainer}>
+                                                    <Text style={Style.detailLabel}>Số tiền:</Text>
+                                                    <Text style={Style.detailText}>{formatAmount(transaction.amount)} đ</Text>
+                                                </View>
+
+                                                {/* Mô tả */}
+                                                <View style={Style.detailContainer}>
+                                                    <Text style={Style.detailLabel}>Mô tả:</Text>
+                                                    <Text style={Style.detailText}>{transaction.description}</Text>
+                                                </View>
+                                            </View>
+                                            
+                                            {/* Thời gian */}
+                                            <Text style={Style.timestamp}>{formatDate(transaction.timestamp)}</Text>
+                                        </TouchableOpacity>
+                                        <View style={CaNhanDetailStyle.type1}>
+                                            <View  style={[CaNhanDetailStyle.buttonType]}>
+                                                <Button
+                                                    icon="pen"
+                                                   
+                                                    onPress={() => {
+                                                        setSelectedTransaction(transaction);
+                                                        setShowDialog(true);
+                                                    }}
+                                                >
+                                                    Cập nhật
+                                                </Button>
+                                            </View>       
+                                            <View  style={[CaNhanDetailStyle.buttonType]}>
+                                                <Button
+                                                    icon="delete"
+                                                    onPress={() => {
+                                                        setSelectedTransaction(transaction);
+                                                        setShowDialog1(true);
+                                                    }}
+                                                >
+                                                    Xóa
+                                                </Button>
+                                            </View> 
+                                        </View>                   
+                                        <Dialog.Container visible={showDialog}>
+                                        {selectedTransaction && (
+                                                    <>
+                                                      <Dialog.Title> Cập nhật thông tin</Dialog.Title>
+                                                        <Dialog.Input
+                                                            label="Tên giao dịch"
+                                                            placeholder={selectedTransaction.name}
+                                                            value={selectedTransaction.name}
+                                                            onChangeText={(text) => setSelectedTransaction({ ...selectedTransaction, name: text })}
+                                                        />
+                                                        <Dialog.Input
+                                                            label="Số tiền"
+                                                            placeholder={(selectedTransaction.amount)}
+                                                            value={(`${selectedTransaction.amount}`)}
+                                                            onChangeText={(handleChangeAmount)}
+                                                        />
+                                                        <Dialog.Input
+                                                            label="Mô tả"
+                                                            placeholder={selectedTransaction.description}
+                                                            value={selectedTransaction.description}
+                                                            onChangeText={(text) => setSelectedTransaction({ ...selectedTransaction, description: text })}
+                                                        />
+                                                    </>
+                                                )}
+                                                <Dialog.Button label="Hủy" onPress={() => setShowDialog(false)} />
+                                                <Dialog.Button label="Cập nhật" onPress={() => {
+                                                    updateTransaction();
+                                                    setShowDialog(false);
+                                                }} />
+                                            </Dialog.Container>     
+                                            <Dialog.Container visible={showDialog1}>
+                                                {selectedTransaction && (
+                                                    <>
+                                                        <Dialog.Title>Xác nhận xóa giao dịch</Dialog.Title>
+                                                        <Dialog.Description>
+                                                            Bạn có chắc chắn muốn xóa giao dịch này?
+                                                        </Dialog.Description>
+                                                        <Dialog.Button label="Hủy" onPress={cancelDelete} />
+                                                        <Dialog.Button label="Xóa" onPress={() => {
+                                                            deleteTransaction();
+                                                            setShowDialog1(false);}}
+                                                            />
+                                                            </>
+                                                )}
+                                            </Dialog.Container>
+                                    </View>
+                                ))}
+                        </View>
+                        {loading && page > 1 && <ActivityIndicator/>}       
+                    </ScrollView>  
+                     ) }  
                      {loading1 && (
                         <ScrollView  >                        
                                     {loading && <ActivityIndicator/>}

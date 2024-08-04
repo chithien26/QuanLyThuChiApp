@@ -120,7 +120,9 @@ timestamp: {
     fontSize: 12,
     marginTop: 4,
 },
-
+contentContainer: {
+  maxHeight: 550, // Giới hạn chiều cao của ScrollView là 200
+},
   
 
 

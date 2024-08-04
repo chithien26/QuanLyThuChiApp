@@ -66,19 +66,30 @@ const   AddThuChiGroup = ({}) => {
         try {
             const token = await AsyncStorage.getItem('token');
             console.log(token) ;
+            let requestData= [];
             const formattedDate = moment(date).format('YYYY-MM-DD');
-            const requestData = {
+            if(user.id===group.create_by){
+            requestData = {
                 name: name,
                 amount: amount,
                 timestamp:formattedDate,
                 description: note,
-                transaction_category_id: selectedCategoryId,              
+                transaction_category_id: selectedCategoryId,
+                accept: "true",              
             };
+            } else {
+            requestData = {
+                name: name,
+                amount: amount,
+                timestamp:formattedDate,
+                description: note,
+                transaction_category_id: selectedCategoryId,                        
+            }};
             console.log(requestData)
             const response = await authApi(token).post(endpoints['addTransactionGroup'](group.id), requestData,{
                 headers: {
                     'Content-Type': 'application/json',
-                  },
+                  }
             });
             if (response.status ===201){
                 Alert.alert('Thêm khoản chi thành công');                   

@@ -103,6 +103,7 @@ const Register = () => {
         }  
     } catch (error) {
       console.error('Lỗi khi đăng ký:', error);
+      Alert.alert('Đăng ký thất bại', 'Có lỗi xảy ra, vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

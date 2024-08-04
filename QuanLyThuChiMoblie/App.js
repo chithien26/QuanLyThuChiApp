@@ -16,6 +16,7 @@ import CaNhanDetail from './components/QuanLyThuChi/CaNhanDetail';
 import AddThuChiGroup from './components/QuanLyThuChi/AddThuChiGroup';
 
 
+
 const Stack =createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -36,7 +37,8 @@ const MyTab =() =>{
         name="Nhom"
         component={Nhom}
         options={{ headerShown: false, title: "Nhóm", tabBarIcon: () => <Icon size={30} source="account-group"/> }}
-      />   
+      />
+        
     </Tab.Navigator>
   )
 }

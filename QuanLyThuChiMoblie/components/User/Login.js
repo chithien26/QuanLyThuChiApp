@@ -54,7 +54,7 @@ const Login =() => {
 
             setTimeout(async() => {
                 let user = await authApi(res.data.access_token).get(endpoints['current-user']);
-                console.info(user.data);
+                console.log(user.data);
                 dispatch({
                     "type":"login",
                     "payload":user.data

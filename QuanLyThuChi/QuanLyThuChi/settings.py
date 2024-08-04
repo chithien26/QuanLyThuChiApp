@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-&7q5q4-%@(%^gv!f)mto!qj6lfo8ifoo-2zz$ja6o=8ad*$9%k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [] #'192.168.64.1'
+ALLOWED_HOSTS = ['192.168.0.105']
 
 
 
@@ -93,7 +93,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'quanlythuchiapp',
         'USER': 'root',
-        'PASSWORD': 'chithien26@',
+        'PASSWORD': '123456',
         'PORT': ''
     }
 }
@@ -144,7 +144,7 @@ REST_FRAMEWORK = {
     #     'rest_framework.permissions.IsAuthenticated',
     # ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
+    'PAGE_SIZE': 15,
     'DEFAULT_PARSER_CLASSED': ['rest_framework.parsers.FileUploadParser'],
 }
 OAUTH2_PROVIDER = {

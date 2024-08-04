@@ -63,10 +63,10 @@ const Nhom =()=>{
               }
             ) 
               if (response.status===201) {
-                console.log(`Đã thêm user leader ID ${userId} vào group:`);
+                console.log(`Đã thêm user leader ID vào group:`);
               }                     
           } catch (error) {
-              console.error(`Error adding user with ID ${userId} to group:`, error);
+              console.error(`Error adding user with ID  to group:`, error);
           }
       }
   

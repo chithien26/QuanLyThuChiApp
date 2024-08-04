@@ -40,6 +40,7 @@ const Profile = () => {
             console.log(page)
         }
       }
+    
     const Logout = () => {
         dispatch({ type: "logout" });
         navigation.navigate('Login');
