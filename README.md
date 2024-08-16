@@ -1,2 +1,2 @@
 # QuanLyThuChiApp
-Django
+Django + React Native
